@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_checkout'])) 
         <form method="post">
             <input type="hidden" name="index" value="<?= $selected_index ?>">
             <button type="submit" name="confirm_checkout" class="btn btn-danger">
-                Xác nhận trả phòng
+                xác nhận trả phòng?
             </button>
         </form>
     <?php endif; ?>

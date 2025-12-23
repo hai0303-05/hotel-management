@@ -11,7 +11,7 @@ $bookings = $_SESSION['bookings'] ?? [];
     <title>Danh sách đặt phòng</title>
     <link rel="stylesheet" href="../assets/style.css">
     <?php if (isset($_GET['checkout'])): ?>
-    <p style="color: green;">Trả phòng thành công!</p>
+    <p style="color: green;">Trả phòng thành công?</p>
 <?php endif; ?>
 
 </head>

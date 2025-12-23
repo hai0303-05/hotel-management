@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <form method="post">
         <div class="form-group">
-            <label>Tên khách hàng</label>
+            <label>Tên khách hàng:</label>
             <input type="text" name="customer_name" class="form-control" required>
         </div>
 
