@@ -1,66 +1,101 @@
 <?php
-session_start();
+require_once "../config/db.php";
 
-if (!isset($_SESSION['bookings'])) {
-    $_SESSION['bookings'] = [];
-}
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $booking = [
-        'customer_name' => $_POST['customer_name'],
-        'room_number'   => $_POST['room_number'],
-        'check_in'      => $_POST['check_in'],
-        'check_out'     => $_POST['check_out']
-    ];
-
-    $_SESSION['bookings'][] = $booking;
-
-    header("Location: list.php?success=1");
-    exit;
-}
+/* Lấy phòng trống */
+$rooms = $conn->query("SELECT id, room_number, room_type FROM rooms WHERE status='available'");
 ?>
-
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>Đặt phòng</title>
-    <link rel="stylesheet" href="../assets/style.css">
+<meta charset="UTF-8">
+<title>Đặt phòng</title>
 </head>
 <body>
 
-<div class="container">
-    <h1 class="page-title">ĐẶT PHÒNG</h1>
+<h1>Đặt phòng</h1>
 
-    <form method="post">
-        <div class="form-group">
-            <label>Tên khách hàng:</label>
-            <input type="text" name="customer_name" class="form-control" required>
-        </div>
+<button onclick="showForm('new')">Khách mới</button>
+<button onclick="showForm('old')">Khách đặt trước</button>
 
-        <div class="form-group">
-            <label>Phòng</label>
-            <select name="room_number" class="form-control" required>
-                <option value="">-- Chọn phòng --</option>
-                <option value="101">101</option>
-                <option value="102">102</option>
-                <option value="103">103</option>
-            </select>
-        </div>
+<hr>
 
-        <div class="form-group">
-            <label>Ngày nhận phòng</label>
-            <input type="date" name="check_in" class="form-control" required>
-        </div>
+<form id="bookingForm" method="post" style="display:none">
 
-        <div class="form-group">
-            <label>Ngày trả phòng</label>
-            <input type="date" name="check_out" class="form-control" required>
-        </div>
+    <label>Số điện thoại</label><br>
+    <input type="text" id="phone" name="phone" onkeyup="searchCustomer()">
+    <div id="list"></div><br>
 
-        <button class="btn btn-primary">Đặt phòng</button>
-    </form>
-</div>
+    <label>Tên khách hàng</label><br>
+    <input type="text" id="name" name="name"><br><br>
+
+    <label>Căn cước công dân</label><br>
+    <input type="text" id="id_card" name="id_card"><br><br>
+
+    <label>Chọn phòng trống</label><br>
+    <select name="room_id">
+        <option value="">-- Chọn phòng --</option>
+        <?php while ($r = $rooms->fetch_assoc()) { ?>
+            <option value="<?= $r['id'] ?>">
+                <?= $r['room_number'] ?> - <?= $r['room_type'] ?>
+            </option>
+        <?php } ?>
+    </select><br><br>
+
+    <label>Ngày nhận phòng</label><br>
+    <input type="date" name="check_in"><br><br>
+
+    <label>Ngày trả phòng</label><br>
+    <input type="date" name="check_out"><br><br>
+
+    <button type="submit">Đặt phòng</button>
+    <button type="button" onclick="location.reload()">Quay lại</button>
+
+</form>
+
+<script>
+let mode = '';
+
+function showForm(type) {
+    mode = type;
+    document.getElementById('bookingForm').style.display = 'block';
+    document.getElementById('list').innerHTML = '';
+
+    if (type === 'new') {
+        document.getElementById('phone').value = '';
+        document.getElementById('name').value = '';
+        document.getElementById('id_card').value = '';
+    }
+}
+
+function searchCustomer() {
+    if (mode !== 'old') return;
+
+    let phone = document.getElementById('phone').value;
+    if (phone.length < 3) {
+        document.getElementById('list').innerHTML = '';
+        return;
+    }
+
+    fetch("list.php?phone=" + phone)
+        .then(res => res.json())
+        .then(data => {
+            let html = '';
+            data.forEach(c => {
+                html += `<div onclick="fillCustomer('${c.name}','${c.phone}','${c.id_card ?? ''}')">
+                            ${c.phone} - ${c.name}
+                         </div>`;
+            });
+            document.getElementById('list').innerHTML = html;
+        });
+}
+
+function fillCustomer(name, phone, id_card) {
+    document.getElementById('name').value = name;
+    document.getElementById('phone').value = phone;
+    document.getElementById('id_card').value = id_card;
+    document.getElementById('list').innerHTML = '';
+}
+</script>
 
 </body>
 </html>

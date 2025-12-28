@@ -1,64 +1,28 @@
 <?php
-session_start();
+require_once "../config/db.php";
 
-$bookings = $_SESSION['bookings'] ?? [];
-?>
+$phone = $_GET['phone'] ?? '';
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Danh sách đặt phòng</title>
-    <link rel="stylesheet" href="../assets/style.css">
-    <?php if (isset($_GET['checkout'])): ?>
-    <p style="color: green;">Trả phòng thành công?</p>
-<?php endif; ?>
+if (strlen($phone) < 3) {
+    echo json_encode([]);
+    exit;
+}
 
-</head>
-<body>
+$sql = "SELECT id, name, phone, id_card
+        FROM customers
+        WHERE phone LIKE ?
+        LIMIT 5";
 
-<div class="container">
-    <h1 class="page-title">Danh sách khách đang thuê</h1>
+$stmt = $conn->prepare($sql);
+$like = "%$phone%";
+$stmt->bind_param("s", $like);
+$stmt->execute();
 
-    <?php if (isset($_GET['success'])): ?>
-        <p style="color: green;">Đặt phòng thành công!</p>
-    <?php endif; ?>
+$result = $stmt->get_result();
+$data = [];
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Khách hàng</th>
-                <th>Phòng</th>
-                <th>Ngày nhận</th>
-                <th>Ngày trả</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
+while ($row = $result->fetch_assoc()) {
+    $data[] = $row;
+}
 
-        <?php if (empty($bookings)): ?>
-            <tr>
-                <td colspan="5">Chưa có khách đặt phòng</td>
-            </tr>
-        <?php else: ?>
-            <?php foreach ($bookings as $index => $b): ?>
-                <tr>
-                    <td><?= htmlspecialchars($b['customer_name']) ?></td>
-                    <td><?= $b['room_number'] ?></td>
-                    <td><?= $b['check_in'] ?></td>
-                    <td><?= $b['check_out'] ?></td>
-                    <td>
-                        <a href="checkout.php?index=<?= $index ?>" class="btn btn-primary">
-                            Trả phòng
-                        </a>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-        <?php endif; ?>
-
-        </tbody>
-    </table>
-</div>
-
-</body>
-</html>
+echo json_encode($data);
