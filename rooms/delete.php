@@ -1,11 +1,19 @@
 <?php
-session_start();                     // Khởi tạo session
-require_once "../config/db.php";     // Kết nối CSDL
+session_start();
+require_once "../config/db.php";
 
-$id = $_GET['id'];                  // Lấy id phòng cần xóa
+$id = $_GET['id'];
 
-// Thực hiện xóa phòng
+// Kiểm tra trạng thái phòng
+$room = $conn->query("SELECT status FROM rooms WHERE id = $id")->fetch_assoc();
+
+// Nếu phòng đang booked → không cho xóa
+if ($room['status'] == 'booked') {
+    header("Location: list.php?error=booked");
+    exit;
+}
+
+// Nếu available thì cho xóa
 $conn->query("DELETE FROM rooms WHERE id = $id");
-
-// Quay lại trang danh sách
 header("Location: list.php");
+exit;

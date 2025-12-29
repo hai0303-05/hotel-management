@@ -1,33 +1,43 @@
 <?php
-session_start();                         // Bắt đầu session
-require_once "../config/db.php";         // Kết nối database
+session_start();
+require_once "../config/db.php";
 
-$id = $_GET['id'];                      // Lấy id phòng từ URL
+$id = $_GET['id'];
+$room = $conn->query("SELECT * FROM rooms WHERE id = $id")->fetch_assoc();
 
-// Lấy thông tin phòng hiện tại
-$result = $conn->query("SELECT * FROM rooms WHERE id = $id");
-$room = $result->fetch_assoc();
+$error = "";
 
-// Khi người dùng submit form sửa
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    // Lấy dữ liệu mới từ form
-    $room_number = $_POST['room_number'];
-    $room_type   = $_POST['room_type'];
-    $price       = $_POST['price'];
-    $status      = $_POST['status'];     // available | booked
+    $room_number = trim($_POST['room_number']);
+    $room_type   = trim($_POST['room_type']);
+    $price       = trim($_POST['price']);
 
-    // Cập nhật thông tin phòng
-    $sql = "UPDATE rooms SET
-                room_number = '$room_number',
-                room_type   = '$room_type',
-                price       = '$price',
-                status      = '$status'
-            WHERE id = $id";
+    // 1. Không cho để trống
+    if ($room_number == "" || $room_type == "" || $price == "") {
+        $error = "Please fill in all fields.";
+    } else {
+        // 2. Không cho trùng số phòng (trừ chính nó)
+        $check = $conn->query(
+            "SELECT id FROM rooms 
+             WHERE room_number = '$room_number' AND id != $id"
+        );
 
-    $conn->query($sql);                  // Thực thi cập nhật
-
-    header("Location: list.php");        // Quay về danh sách
+        if ($check->num_rows > 0) {
+            $error = "Room number already exists.";
+        } else {
+            // 3. Update KHÔNG ĐỘNG status
+            $conn->query(
+                "UPDATE rooms SET
+                    room_number = '$room_number',
+                    room_type   = '$room_type',
+                    price       = '$price'
+                 WHERE id = $id"
+            );
+            header("Location: list.php");
+            exit;
+        }
+    }
 }
 ?>
 
@@ -41,39 +51,27 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="container">
     <h2 class="page-title">Edit Room</h2>
 
-    <!-- Form sửa phòng -->
-    <form method="post">
+    <?php if ($error != "") { ?>
+        <p style="color:red"><?= $error ?></p>
+    <?php } ?>
 
+    <form method="post">
         <div class="form-group">
             <label>Room Number</label>
             <input class="form-control" name="room_number"
-                   value="<?= $room['room_number'] ?>">
+                   value="<?= $room['room_number'] ?>" required>
         </div>
 
         <div class="form-group">
             <label>Room Type</label>
             <input class="form-control" name="room_type"
-                   value="<?= $room['room_type'] ?>">
+                   value="<?= $room['room_type'] ?>" required>
         </div>
 
         <div class="form-group">
             <label>Price</label>
-            <input class="form-control" name="price"
-                   value="<?= $room['price'] ?>">
-        </div>
-
-        <div class="form-group">
-            <label>Status</label>
-            <select class="form-control" name="status">
-                <option value="available"
-                    <?= $room['status'] == 'available' ? 'selected' : '' ?>>
-                    Available
-                </option>
-                <option value="booked"
-                    <?= $room['status'] == 'booked' ? 'selected' : '' ?>>
-                    Booked
-                </option>
-            </select>
+            <input class="form-control" type="number" name="price"
+                   value="<?= $room['price'] ?>" required>
         </div>
 
         <button class="btn btn-primary">Update</button>

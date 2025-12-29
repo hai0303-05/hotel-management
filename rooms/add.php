@@ -1,22 +1,36 @@
 <?php
-session_start();                      // Khởi động session dùng chung cho toàn hệ thống
-require_once "../config/db.php";      // Kết nối CSDL, chỉ dùng biến $conn
+session_start();
+require_once "../config/db.php";
 
-// Kiểm tra khi người dùng submit form
+$error = "";
+
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
-    // Lấy dữ liệu từ form
-    $room_number = $_POST['room_number'];   // Số phòng
-    $room_type   = $_POST['room_type'];     // Loại phòng
-    $price       = $_POST['price'];         // Giá phòng
+    $room_number = trim($_POST['room_number']);
+    $room_type   = trim($_POST['room_type']);
+    $price       = trim($_POST['price']);
 
-    // Thêm phòng mới, trạng thái mặc định là 'available'
-    $sql = "INSERT INTO rooms (room_number, room_type, price, status)
-            VALUES ('$room_number', '$room_type', '$price', 'available')";
+    // 1. Không cho để trống
+    if ($room_number == "" || $room_type == "" || $price == "") {
+        $error = "Please fill in all fields.";
+    } else {
+        // 2. Không cho trùng số phòng
+        $check = $conn->query(
+            "SELECT id FROM rooms WHERE room_number = '$room_number'"
+        );
 
-    $conn->query($sql);               // Thực thi câu lệnh SQL
-
-    header("Location: list.php");     // Quay về trang danh sách phòng
+        if ($check->num_rows > 0) {
+            $error = "Room number already exists.";
+        } else {
+            // 3. Thêm phòng, status mặc định available
+            $conn->query(
+                "INSERT INTO rooms (room_number, room_type, price, status)
+                 VALUES ('$room_number', '$room_type', '$price', 'available')"
+            );
+            header("Location: list.php");
+            exit;
+        }
+    }
 }
 ?>
 
@@ -30,9 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <div class="container">
     <h2 class="page-title">Add Room</h2>
 
-    <!-- Form thêm phòng -->
-    <form method="post">
+    <?php if ($error != "") { ?>
+        <p style="color:red"><?= $error ?></p>
+    <?php } ?>
 
+    <form method="post">
         <div class="form-group">
             <label>Room Number</label>
             <input class="form-control" name="room_number" required>

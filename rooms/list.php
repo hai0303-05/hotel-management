@@ -1,24 +1,19 @@
 <?php
-session_start();                      // Bắt đầu session
-require_once "../config/db.php";      // Kết nối database
+session_start();
+require_once "../config/db.php";
 
-$keyword = "";                        // Biến lưu từ khóa tìm kiếm
+$keyword = "";
 
-// Nếu người dùng nhập từ khóa tìm kiếm
 if (isset($_GET['keyword'])) {
     $keyword = $_GET['keyword'];
-
-    // Tìm theo số phòng, loại phòng hoặc trạng thái
     $sql = "SELECT * FROM rooms
             WHERE room_number LIKE '%$keyword%'
-               OR room_type   LIKE '%$keyword%'
-               OR status      LIKE '%$keyword%'";
+               OR room_type   LIKE '%$keyword%'";
 } else {
-    // Nếu không tìm kiếm, lấy toàn bộ phòng
     $sql = "SELECT * FROM rooms";
 }
 
-$result = $conn->query($sql);         // Thực thi câu lệnh SQL
+$result = $conn->query($sql);
 ?>
 
 <!DOCTYPE html>
@@ -32,12 +27,11 @@ $result = $conn->query($sql);         // Thực thi câu lệnh SQL
 <div class="container">
     <h2 class="page-title">Room List</h2>
 
-    <!-- FORM TÌM KIẾM -->
     <form method="get">
         <div class="form-group">
             <input class="form-control"
                    name="keyword"
-                   placeholder="Search by room number, type or status"
+                   placeholder="Search by room number or type"
                    value="<?= $keyword ?>">
         </div>
         <button class="btn btn-primary">Search</button>
@@ -46,7 +40,6 @@ $result = $conn->query($sql);         // Thực thi câu lệnh SQL
 
     <a href="add.php" class="btn btn-primary">Add Room</a>
 
-    <!-- BẢNG DANH SÁCH PHÒNG -->
     <table class="table">
         <tr>
             <th>ID</th>
