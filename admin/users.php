@@ -5,7 +5,7 @@ require_once '../config/db.php';
 
 $error = '';
 
-/* ===== THEM TAI KHOAN ===== */
+/* THEM */
 if (isset($_POST['add'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
@@ -14,7 +14,6 @@ if (isset($_POST['add'])) {
     if ($username == '' || $password == '') {
         $error = "Khong duoc de trong username hoac password";
     } else {
-        // Kiem tra trung username
         $check = mysqli_query($conn,
             "SELECT id FROM users WHERE username='$username'"
         );
@@ -24,8 +23,8 @@ if (isset($_POST['add'])) {
         } else {
             $password = md5($password);
             mysqli_query($conn,
-                "INSERT INTO users(username, password, role)
-                 VALUES('$username', '$password', '$role')"
+                "INSERT INTO users(username,password,role)
+                 VALUES('$username','$password','$role')"
             );
             header("Location: users.php");
             exit;
@@ -33,7 +32,7 @@ if (isset($_POST['add'])) {
     }
 }
 
-/* ===== XOA TAI KHOAN ===== */
+/* XOA */
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
     mysqli_query($conn, "DELETE FROM users WHERE id=$id");
@@ -41,26 +40,24 @@ if (isset($_GET['delete'])) {
     exit;
 }
 
-/* ===== SUA TAI KHOAN (KEM DOI MAT KHAU) ===== */
+/* SUA */
 if (isset($_POST['update'])) {
     $id = $_POST['id'];
     $username = trim($_POST['username']);
     $role = $_POST['role'];
-    $newpass = trim($_POST['new_password']);
+    $new_password = trim($_POST['new_password']);
 
     if ($username == '') {
         $error = "Username khong duoc de trong";
     } else {
-        // Neu co nhap mat khau moi
-        if ($newpass != '') {
-            $newpass = md5($newpass);
+        if ($new_password != '') {
+            $new_password = md5($new_password);
             mysqli_query($conn,
                 "UPDATE users 
-                 SET username='$username', role='$role', password='$newpass'
+                 SET username='$username', role='$role', password='$new_password'
                  WHERE id=$id"
             );
         } else {
-            // Khong doi mat khau
             mysqli_query($conn,
                 "UPDATE users 
                  SET username='$username', role='$role'
@@ -72,107 +69,83 @@ if (isset($_POST['update'])) {
     }
 }
 
-/* ===== LAY DANH SACH ===== */
 $result = mysqli_query($conn, "SELECT * FROM users");
 ?>
-
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
     <title>Quan ly tai khoan</title>
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
 
-<h2>Quan ly tai khoan nhan vien</h2>
+<div class="container">
+    <h2 class="page-title">Quan ly tai khoan nhan vien</h2>
 
-<p>Xin chao Admin: <b><?php echo $_SESSION['username']; ?></b></p>
+    <p>Xin chao Admin: <b><?php echo $_SESSION['username']; ?></b></p>
 
-<?php if ($error != '') { ?>
-<p style="color:red;"><?php echo $error; ?></p>
-<?php } ?>
+    <?php if ($error != '') { ?>
+        <p class="error"><?php echo $error; ?></p>
+    <?php } ?>
 
-<!-- ===== FORM THEM ===== -->
-<h3>Them tai khoan</h3>
-<form method="post">
-    Username:
-    <input type="text" name="username">
-    Password:
-    <input type="password" name="password">
-    Role:
-    <select name="role">
-        <option value="staff">Nhan vien</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit" name="add">Them</button>
-</form>
+    <h3>Them tai khoan</h3>
+    <form method="post">
+        <div class="form-group">
+            <input type="text" name="username" class="form-control" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <select name="role" class="form-control">
+                <option value="staff">Nhan vien</option>
+                <option value="admin">Admin</option>
+            </select>
+        </div>
+        <button type="submit" name="add" class="btn btn-primary">Them</button>
+    </form>
 
-<hr>
+    <hr>
 
-<!-- ===== DANH SACH ===== -->
-<h3>Danh sach tai khoan</h3>
-<table border="1" cellpadding="5">
-    <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Role</th>
-        <th>Mat khau moi</th>
-        <th>Hanh dong</th>
-    </tr>
+    <table class="table">
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Mat khau moi</th>
+            <th>Hanh dong</th>
+        </tr>
 
-<?php while ($row = mysqli_fetch_assoc($result)) { ?>
-<tr>
-<form method="post">
-    <td><?php echo $row['id']; ?></td>
+        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+        <tr>
+        <form method="post">
+            <td><?php echo $row['id']; ?></td>
+            <td><input type="text" name="username" class="form-control" value="<?php echo $row['username']; ?>"></td>
+            <td>
+                <select name="role" class="form-control">
+                    <option value="admin" <?php if ($row['role']=='admin') echo 'selected'; ?>>Admin</option>
+                    <option value="staff" <?php if ($row['role']=='staff') echo 'selected'; ?>>Nhan vien</option>
+                </select>
+            </td>
+            <td><input type="password" name="new_password" class="form-control"></td>
+            <td>
+                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                <button type="submit" name="update" class="btn btn-primary">Sua</button>
 
-    <td>
-        <input type="text" name="username"
-               value="<?php echo $row['username']; ?>">
-    </td>
-
-    <td>
-        <select name="role">
-            <option value="admin"
-                <?php if ($row['role']=='admin') echo 'selected'; ?>>
-                Admin
-            </option>
-            <option value="staff"
-                <?php if ($row['role']=='staff') echo 'selected'; ?>>
-                Nhan vien
-            </option>
-        </select>
-    </td>
-
-    <td>
-        <input type="password" name="new_password"
-               placeholder="Bo trong neu khong doi">
-    </td>
-
-    <td>
-        <input type="hidden" name="id"
-               value="<?php echo $row['id']; ?>">
-        <button type="submit" name="update">Sua</button>
-
-        <?php if ($row['id'] != $_SESSION['user_id']) { ?>
-            | <a href="users.php?delete=<?php echo $row['id']; ?>"
-                 onclick="return confirm('Xoa tai khoan nay?')">
-                 Xoa
-              </a>
-        <?php } else { ?>
-            | <i>(Tai khoan dang dang nhap)</i>
+                <?php if ($row['id'] != $_SESSION['user_id']) { ?>
+                    <a href="users.php?delete=<?php echo $row['id']; ?>"
+                       class="btn btn-danger"
+                       onclick="return confirm('Xoa tai khoan nay?')">Xoa</a>
+                <?php } ?>
+            </td>
+        </form>
+        </tr>
         <?php } ?>
-    </td>
-</form>
-</tr>
-<?php } ?>
+    </table>
 
-</table>
-
-<p>
-    
-    <a href="../index.php">Trang chu</a> |
-    
-</p>
+    <a href="../index.php">Trang chu</a>
+</div>
 
 </body>
 </html>
