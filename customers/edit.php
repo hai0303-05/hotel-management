@@ -1,42 +1,65 @@
 <?php
-require_once __DIR__ . '/../config/db.php';
+require_once "../config/db.php";
 
-$id = (int)$_GET['id'];
-$customer = $conn->query("SELECT * FROM customers WHERE id=$id")->fetch_assoc();
+$id = $_GET["id"] ?? 0;
+$error = "";
 
-if (!$customer) die('Khách không tồn tại');
+$result = $conn->query("SELECT * FROM customers WHERE id = $id");
+$customer = $result->fetch_assoc();
 
-$error = '';
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $name = $conn->real_escape_string(trim($_POST['name']));
-    $phone = $conn->real_escape_string(trim($_POST['phone']));
-    $email = $conn->real_escape_string(trim($_POST['email']));
-    $id_card = $conn->real_escape_string(trim($_POST['id_card']));
+if (!$customer) {
+    die("Khach hang khong ton tai");
+}
 
-    if ($name == '' || $phone == '') {
-        $error = 'Tên và số điện thoại bắt buộc';
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $name    = trim($_POST["name"]);
+    $phone   = trim($_POST["phone"]);
+    $email   = trim($_POST["email"]);
+    $id_card = trim($_POST["id_card"]);
+
+    if ($name == "" || $phone == "") {
+        $error = "Ten va so dien thoai khong duoc de trong";
     } else {
-        $sql = "UPDATE customers SET name='$name', phone='$phone', 
-                email=NULLIF('$email',''), id_card=NULLIF('$id_card','') WHERE id=$id";
+        $sql = "UPDATE customers 
+                SET name='$name', phone='$phone', email='$email', id_card='$id_card'
+                WHERE id=$id";
         if ($conn->query($sql)) {
-            header('Location: list.php');
+            header("Location: list.php");
             exit();
-        } else { $error = 'Lỗi cập nhật'; }
+        } else {
+            $error = "Loi khi cap nhat";
+        }
     }
 }
 ?>
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>Sửa khách hàng</title></head>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Sua khach hang</title>
+</head>
 <body>
-    <h2>Sửa khách hàng</h2>
-    <form method="post">
-        Tên *<br><input type="text" name="name" value="<?= $customer['name'] ?>"><br><br>
-        Phone *<br><input type="text" name="phone" value="<?= $customer['phone'] ?>"><br><br>
-        Email<br><input type="email" name="email" value="<?= $customer['email'] ?>"><br><br>
-        CCCD<br><input type="text" name="id_card" value="<?= $customer['id_card'] ?>"><br><br>
-        <button type="submit">Cập nhật</button>
-        <a href="list.php">Quay lại</a>
-    </form>
+
+<h2>Sua khach hang</h2>
+
+<?php if ($error != "") echo "<p style='color:red'>$error</p>"; ?>
+
+<form method="post">
+    Ten:<br>
+    <input type="text" name="name" value="<?php echo $customer['name']; ?>"><br><br>
+
+    Phone:<br>
+    <input type="text" name="phone" value="<?php echo $customer['phone']; ?>"><br><br>
+
+    Email:<br>
+    <input type="text" name="email" value="<?php echo $customer['email']; ?>"><br><br>
+
+    CCCD:<br>
+    <input type="text" name="id_card" value="<?php echo $customer['id_card']; ?>"><br><br>
+
+    <button type="submit">Cap nhat</button>
+    <a href="list.php">Quay lai</a>
+</form>
+
 </body>
 </html>
