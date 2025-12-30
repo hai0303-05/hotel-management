@@ -137,9 +137,9 @@ $revenue_by_month = mysqli_query(
     </table>
 
     <p>
-        <a href="users.php">Quan ly tai khoan</a> |
+    
         <a href="../index.php">Trang chu</a> |
-        <a href="../auth/logout.php">Dang xuat</a>
+    
     </p>
 </div>
 
