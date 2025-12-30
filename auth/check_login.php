@@ -10,7 +10,12 @@ if (!isset($_SESSION['user_id'])) {
 /* 2. Ham kiem tra quyen */
 function checkRole($roleCanTruyCap) {
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== $roleCanTruyCap) {
-        echo "Ban khong co quyen truy cap!";
+        echo  "
+        <h2>Ban khong co quyen truy cap!</h2>
+        <p>
+            <a href='../index.php'>trang chu</a> |
+        </p>
+        ";
         exit();
     }
 }
