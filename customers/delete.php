@@ -1,14 +1,14 @@
 <?php
-require_once "../config/db.php";
+require_once __DIR__ . '/../config/db.php';
 
-$id = $_GET['id'];
+$id = (int)$_GET['id'];
 
-$sql = "DELETE FROM customers WHERE id = $id";
+// Kiểm tra xem khách có đang thuê phòng không
+$check = $conn->query("SELECT * FROM bookings WHERE customer_id=$id AND check_in IS NOT NULL AND check_out IS NULL");
 
-if ($conn->query($sql)) {
-    header("Location: list.php");
-    exit();
-} else {
-    echo "Lỗi: " . $conn->error;
+if ($check->num_rows > 0) {
+    die('Khách đang đặt phòng, không thể xóa');
 }
-//da 
+
+$conn->query("DELETE FROM customers WHERE id=$id");
+header('Location: list.php');
