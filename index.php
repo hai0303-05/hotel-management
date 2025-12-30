@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-/* ===== CHAN CHUA DANG NHAP ===== */
 if (!isset($_SESSION['user_id'])) {
     header("Location: auth/login.php");
     exit;
@@ -13,7 +12,6 @@ if (!isset($_SESSION['user_id'])) {
     <meta charset="UTF-8">
     <title>Hotel Management</title>
 
-    <!-- CSS chung (sau này chỉ việc viết file này) -->
     <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
@@ -29,9 +27,8 @@ if (!isset($_SESSION['user_id'])) {
 
     <hr>
 
-    <!-- ===== MENU CHINH ===== -->
     <ul>
-        <!-- DUNG CHO CA ADMIN & STAFF -->
+       
         <li>
             <a href="rooms/list.php">Quản lý phòng</a>
         </li>
@@ -44,7 +41,6 @@ if (!isset($_SESSION['user_id'])) {
             <a href="bookings/list.php">Đặt phòng</a>
         </li>
 
-        <!-- ===== CHI ADMIN ===== -->
         <?php if ($_SESSION['role'] === 'admin'): ?>
             <li>
                 <a href="admin/stats.php">Thống kê doanh thu</a>
