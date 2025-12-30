@@ -1,38 +1,99 @@
 <?php
 require_once "../config/db.php";
 
-/* Lấy phòng trống */
-$rooms = $conn->query("SELECT id, room_number, room_type FROM rooms WHERE status='available'");
+/* =========================
+   XỬ LÝ ĐẶT PHÒNG
+========================= */
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $name      = $_POST['name'];
+    $phone     = $_POST['phone'];
+    $id_card   = $_POST['id_card'];
+    $room_id   = (int)$_POST['room_id'];
+    $check_in  = $_POST['check_in'];
+    $check_out = $_POST['check_out'];
+
+    /* 1. Thêm khách hàng */
+    $stmt = $conn->prepare("
+        INSERT INTO customers (name, phone, id_card)
+        VALUES (?, ?, ?)
+    ");
+    $stmt->bind_param("sss", $name, $phone, $id_card);
+    $stmt->execute();
+    $customer_id = $conn->insert_id;
+
+    /* 2. Lấy giá phòng */
+    $stmt = $conn->prepare("SELECT price FROM rooms WHERE id = ?");
+    $stmt->bind_param("i", $room_id);
+    $stmt->execute();
+    $room = $stmt->get_result()->fetch_assoc();
+    $price = $room['price'];
+
+    /* 3. Tính số ngày */
+    $days = (strtotime($check_out) - strtotime($check_in)) / 86400;
+    if ($days < 1) $days = 1;
+
+    $total_price = $days * $price;
+
+    /* 4. Thêm booking */
+    $stmt = $conn->prepare("
+        INSERT INTO bookings (room_id, customer_id, check_in, check_out, total_price)
+        VALUES (?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param(
+        "iissd",
+        $room_id,
+        $customer_id,
+        $check_in,
+        $check_out,
+        $total_price
+    );
+    $stmt->execute();
+
+    /* 5. Cập nhật trạng thái phòng */
+    $stmt = $conn->prepare("
+        UPDATE rooms SET status = 'booked' WHERE id = ?
+    ");
+    $stmt->bind_param("i", $room_id);
+    $stmt->execute();
+
+    echo "<script>alert('Đặt phòng thành công'); location.href='add.php';</script>";
+    exit;
+}
+
+/* =========================
+   LẤY PHÒNG TRỐNG
+========================= */
+$rooms = $conn->query("
+    SELECT id, room_number, room_type
+    FROM rooms
+    WHERE status = 'available'
+");
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
 <title>Đặt phòng</title>
 </head>
 <body>
 
-<h1>Đặt phòng</h1>
+<h1>ĐẶT PHÒNG</h1>
 
-<button onclick="showForm('new')">Khách mới</button>
-<button onclick="showForm('old')">Khách đặt trước</button>
-
-<hr>
-
-<form id="bookingForm" method="post" style="display:none">
-
-    <label>Số điện thoại</label><br>
-    <input type="text" id="phone" name="phone" onkeyup="searchCustomer()">
-    <div id="list"></div><br>
+<form method="post">
 
     <label>Tên khách hàng</label><br>
-    <input type="text" id="name" name="name"><br><br>
+    <input type="text" name="name" required><br><br>
+
+    <label>Số điện thoại</label><br>
+    <input type="text" name="phone" required><br><br>
 
     <label>Căn cước công dân</label><br>
-    <input type="text" id="id_card" name="id_card"><br><br>
+    <input type="text" name="id_card"><br><br>
 
-    <label>Chọn phòng trống</label><br>
-    <select name="room_id">
+    <label>Chọn phòng</label><br>
+    <select name="room_id" required>
         <option value="">-- Chọn phòng --</option>
         <?php while ($r = $rooms->fetch_assoc()) { ?>
             <option value="<?= $r['id'] ?>">
@@ -42,60 +103,14 @@ $rooms = $conn->query("SELECT id, room_number, room_type FROM rooms WHERE status
     </select><br><br>
 
     <label>Ngày nhận phòng</label><br>
-    <input type="date" name="check_in"><br><br>
+    <input type="date" name="check_in" required><br><br>
 
     <label>Ngày trả phòng</label><br>
-    <input type="date" name="check_out"><br><br>
+    <input type="date" name="check_out" required><br><br>
 
     <button type="submit">Đặt phòng</button>
-    <button type="button" onclick="location.reload()">Quay lại</button>
 
 </form>
-
-<script>
-let mode = '';
-
-function showForm(type) {
-    mode = type;
-    document.getElementById('bookingForm').style.display = 'block';
-    document.getElementById('list').innerHTML = '';
-
-    if (type === 'new') {
-        document.getElementById('phone').value = '';
-        document.getElementById('name').value = '';
-        document.getElementById('id_card').value = '';
-    }
-}
-
-function searchCustomer() {
-    if (mode !== 'old') return;
-
-    let phone = document.getElementById('phone').value;
-    if (phone.length < 3) {
-        document.getElementById('list').innerHTML = '';
-        return;
-    }
-
-    fetch("list.php?phone=" + phone)
-        .then(res => res.json())
-        .then(data => {
-            let html = '';
-            data.forEach(c => {
-                html += `<div onclick="fillCustomer('${c.name}','${c.phone}','${c.id_card ?? ''}')">
-                            ${c.phone} - ${c.name}
-                         </div>`;
-            });
-            document.getElementById('list').innerHTML = html;
-        });
-}
-
-function fillCustomer(name, phone, id_card) {
-    document.getElementById('name').value = name;
-    document.getElementById('phone').value = phone;
-    document.getElementById('id_card').value = id_card;
-    document.getElementById('list').innerHTML = '';
-}
-</script>
 
 </body>
 </html>
