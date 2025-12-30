@@ -1,55 +1,58 @@
 <?php
-require_once "../config/db.php";
+require_once __DIR__ . '/../config/db.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name    = $_POST['name'];
-    $phone   = $_POST['phone'];
-    $email   = $_POST['email'];
-    $id_card = $_POST['id_card'];
+$error = '';
 
-    $sql = "INSERT INTO customers (name, phone, email, id_card)
-            VALUES ('$name', '$phone', '$email', '$id_card')";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name  = trim($_POST['name']);
+    $phone = trim($_POST['phone']);
+    $email = trim($_POST['email']);
+    $id_card = trim($_POST['id_card']);
 
-    if ($conn->query($sql)) {
-        header("Location: list.php");
-        exit();
+    if ($name === '' || $phone === '') {
+        $error = 'Ten va so dien thoai la bat buoc';
     } else {
-        echo "Lỗi: " . $conn->error;
+        $stmt = $connection->prepare(
+            "INSERT INTO customers (name, phone, email, id_card) VALUES (?, ?, ?, ?)"
+        );
+        $stmt->bind_param("ssss", $name, $phone, $email, $id_card);
+        $stmt->execute();
+        header('Location: list.php');
+        exit;
     }
 }
 ?>
+
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Add Customer</title>
+    <title>Them khach hang</title>
 </head>
 <body>
 
-<h2>Thêm khách hàng</h2>
+<h2>Them khach hang</h2>
+
+<?php if ($error): ?>
+    <p style="color:red"><?= $error ?></p>
+<?php endif; ?>
 
 <form method="post">
-    <p>
-        Name:<br>
-        <input type="text" name="name" required>
-    </p>
-    <p>
-        Phone:<br>
-        <input type="text" name="phone">
-    </p>
-    <p>
-        Email:<br>
-        <input type="email" name="email">
-    </p>
-    <p>
-        ID Card:<br>
-        <input type="text" name="id_card">
-    </p>
-    <button type="submit">Thêm</button>
-</form>
+    Ten khach hang *<br>
+    <input type="text" name="name"><br><br>
 
-<a href="list.php">Quay lại</a>
+    So dien thoai *<br>
+    <input type="text" name="phone"><br><br>
+
+    Email (co the de trong)<br>
+    <input type="email" name="email"><br><br>
+
+    CCCD (co the de trong)<br>
+    <input type="text" name="id_card"><br><br>
+
+    <button type="submit">Luu</button>
+    <a href="list.php">Quay lai</a>
+</form>
 
 </body>
 </html>
-//da
