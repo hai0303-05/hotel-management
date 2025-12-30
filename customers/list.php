@@ -1,20 +1,12 @@
 <?php
 require_once "../config/db.php";
 
-$sql = "SELECT id, name, phone, email, id_card, status FROM customers ORDER BY id DESC";
-$result = $conn->query($sql);
-
-function hienTrangThai($status) {
-    switch ($status) {
-        case 'dat_truoc': return 'Đặt trước';
-        case 'dang_dat':  return 'Đang đặt';
-        case 'tung_dat':  return 'Từng đặt';
-        default: return 'Không xác định';
-    }
-}
+$sql = "SELECT id, name, phone, email, id_card FROM customers";
+$result = $conn->query($sql); // <- CHU Y: $conn
 ?>
+
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Danh sach khach hang</title>
@@ -22,40 +14,38 @@ function hienTrangThai($status) {
 <body>
 
 <h2>Danh sach khach hang</h2>
-<a href="add.php">+ Them khach hang</a>
+<a href="add.php">Them khach hang</a>
 
-<table border="1" cellpadding="8" cellspacing="0">
+<table border="1">
     <tr>
         <th>ID</th>
         <th>Ten</th>
         <th>Phone</th>
         <th>Email</th>
         <th>CCCD</th>
-        <th>Trang thai</th>
         <th>Hanh dong</th>
     </tr>
 
-    <?php if ($result && $result->num_rows > 0): ?>
-        <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-                <td><?php echo $row['id']; ?></td>
-                <td><?php echo $row['name']; ?></td>
-                <td><?php echo $row['phone']; ?></td>
-                <td><?php echo $row['email']; ?></td>
-                <td><?php echo $row['id_card']; ?></td>
-                <td><?php echo hienTrangThai($row['status']); ?></td>
-                <td>
-                    <a href="edit.php?id=<?php echo $row['id']; ?>">Sua</a> |
-                    <a href="delete.php?id=<?php echo $row['id']; ?>"
-                       onclick="return confirm('Xoa khach hang nay?');">Xoa</a>
-                </td>
-            </tr>
-        <?php endwhile; ?>
-    <?php else: ?>
-        <tr>
-            <td colspan="7">Chua co du lieu</td>
-        </tr>
-    <?php endif; ?>
+<?php
+if ($result && $result->num_rows > 0) {
+    while ($row = $result->fetch_assoc()) {
+        echo "<tr>";
+        echo "<td>".$row['id']."</td>";
+        echo "<td>".$row['name']."</td>";
+        echo "<td>".$row['phone']."</td>";
+        echo "<td>".$row['email']."</td>";
+        echo "<td>".$row['id_card']."</td>";
+        echo "<td>
+                <a href='edit.php?id=".$row['id']."'>Sua</a> |
+                <a href='delete.php?id=".$row['id']."'>Xoa</a>
+              </td>";
+        echo "</tr>";
+    }
+} else {
+    echo "<tr><td colspan='6'>Khong co du lieu</td></tr>";
+}
+?>
+
 </table>
 
 </body>
