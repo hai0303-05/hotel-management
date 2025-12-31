@@ -38,7 +38,7 @@ if (!isset($_SESSION['user_id'])) {
         </li>
 
         <li>
-            <a href="bookings/list.php">Đặt phòng</a>
+            <a href="bookings/add.php">Đặt phòng</a>
         </li>
 
         <?php if ($_SESSION['role'] === 'admin'): ?>
