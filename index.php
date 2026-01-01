@@ -13,31 +13,32 @@ $page = $_GET['page'] ?? '';
 /* ===== ROUTES ===== */
 $routes = [
     // rooms
-    'rooms'          => 'rooms/list.php',
-    'rooms_add'      => 'rooms/add.php',
-    'rooms_edit'     => 'rooms/edit.php',
+    'rooms'           => 'rooms/list.php',
+    'rooms_add'       => 'rooms/add.php',
+    'rooms_edit'      => 'rooms/edit.php',
 
     // bookings
-    'bookings'       => 'bookings/list.php',
-    'bookings_add'   => 'bookings/add.php',
-    'bookings_edit'  => 'bookings/edit.php',
+    'bookings'        => 'bookings/list.php',
+    'bookings_add'    => 'bookings/add.php',
+    'bookings_edit'   => 'bookings/edit.php',
+    'bookings_checkout'=> 'bookings/checkout.php',
 
     // customers
-    'customers'      => 'customers/list.php',
-    'customers_add'  => 'customers/add.php',
-    'customers_edit' => 'customers/edit.php',
+    'customers'       => 'customers/list.php',
+    'customers_add'   => 'customers/add.php',
+    'customers_edit'  => 'customers/edit.php',
 
     // admin
-    'admin_users'    => 'admin/users.php',
-    'admin_stats'    => 'admin/stats.php',
+    'admin_users'     => 'admin/users.php',
+    'admin_stats'     => 'admin/stats.php',
 ];
 
 /* ===== CSS THEO MODULE ===== */
 $moduleCss = '';
-if (str_starts_with($page, 'rooms'))     $moduleCss = 'rooms.css';
-if (str_starts_with($page, 'bookings'))  $moduleCss = 'bookings.css';
-if (str_starts_with($page, 'customers')) $moduleCss = 'customers.css';
-if (str_starts_with($page, 'admin'))     $moduleCss = 'admin.css';
+if (str_starts_with($page, 'rooms'))      $moduleCss = 'rooms.css';
+if (str_starts_with($page, 'bookings'))   $moduleCss = 'bookings.css';
+if (str_starts_with($page, 'customers'))  $moduleCss = 'customers.css';
+if (str_starts_with($page, 'admin'))      $moduleCss = 'admin.css';
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -58,7 +59,6 @@ if (str_starts_with($page, 'admin'))     $moduleCss = 'admin.css';
 <!-- ===== HEADER ===== -->
 <header class="layout-header">
     <h1>Hotel Management</h1>
-
     <div class="header-user">
         Xin chào <b><?php echo $_SESSION['username']; ?></b>
         | <a href="auth/logout.php">Đăng xuất</a>
@@ -70,6 +70,7 @@ if (str_starts_with($page, 'admin'))     $moduleCss = 'admin.css';
     <a href="index.php">Trang chủ</a>
     <a href="index.php?page=rooms">Phòng</a>
     <a href="index.php?page=bookings">Đặt phòng</a>
+    <a href="index.php?page=bookings_checkout">Trả phòng</a>
     <a href="index.php?page=customers">Khách hàng</a>
 
     <?php if ($_SESSION['role'] === 'admin'): ?>
@@ -81,26 +82,23 @@ if (str_starts_with($page, 'admin'))     $moduleCss = 'admin.css';
 <!-- ===== CONTENT ===== -->
 <main class="layout-content">
 <?php
-/* ===== HIỂN THỊ NỘI DUNG ===== */
 if ($page !== '' && isset($routes[$page])) {
     include $routes[$page];
 } else {
-    /* ===== TRANG CHỦ MẶC ĐỊNH ===== */
+    /* ===== DASHBOARD TRANG CHỦ ===== */
     ?>
     <div class="dashboard-banner">
         <div class="dashboard-icon">🏨</div>
-
         <h2>Hotel Management System</h2>
-
         <p>
             Chào mừng <b><?php echo $_SESSION['username']; ?></b>
             (<?php echo $_SESSION['role'] === 'admin' ? 'Quản lý' : 'Nhân viên'; ?>)
         </p>
-
         <p class="dashboard-note">
-            Vui lòng chọn chức năng ở menu phía trên để bắt đầu thao tác
+            Chọn chức năng ở menu phía trên để bắt đầu thao tác
         </p>
     </div>
+
     <?php
 }
 ?>

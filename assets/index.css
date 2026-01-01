@@ -47,14 +47,14 @@ body {
 /* ===== CONTENT ===== */
 .layout-content {
     padding: 20px;
-    min-height: calc(100vh - 150px);
+    min-height: calc(100vh - 160px);
     background: #fff;
 }
 
-/* ===== DASHBOARD (TRANG CHỦ) ===== */
+/* ===== DASHBOARD ===== */
 .dashboard-banner {
-    margin-top: 40px;
-    padding: 60px 20px;
+    margin-top: 30px;
+    padding: 50px 20px;
     text-align: center;
     background: #f4f6f8;
     border-radius: 8px;
@@ -62,7 +62,7 @@ body {
 
 .dashboard-icon {
     font-size: 70px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .dashboard-banner h2 {
@@ -70,15 +70,33 @@ body {
     color: #2c3e50;
 }
 
-.dashboard-banner p {
-    margin: 6px 0;
-    color: #555;
-}
-
 .dashboard-note {
-    margin-top: 15px;
+    margin-top: 10px;
     font-style: italic;
     color: #777;
+}
+
+/* ===== DASHBOARD CARDS ===== */
+.dashboard-cards {
+    margin-top: 30px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.dash-card {
+    display: block;
+    padding: 25px;
+    background: #3498db;
+    color: #fff;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.dash-card:hover {
+    background: #2980b9;
 }
 
 /* ===== FOOTER ===== */
