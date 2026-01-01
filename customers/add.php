@@ -9,9 +9,29 @@ $errors = [];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    if ($name === '') $errors[] = "Ten bat buoc";
-    if ($phone === '') $errors[] = "SDT bat buoc";
+    // Bat buoc
+    if ($name === '') {
+        $errors[] = "Ten bat buoc";
+    }
 
+    if ($phone === '') {
+        $errors[] = "SDT bat buoc";
+    }
+
+    // Kiem tra trung CCCD (neu co nhap)
+    if ($id_card !== '') {
+        $id_card = trim($id_card);
+        $check = $conn->query("
+            SELECT id FROM customers
+            WHERE id_card = '$id_card'
+        ");
+
+        if ($check && $check->num_rows > 0) {
+            $errors[] = "CCCD da ton tai, khong the them";
+        }
+    }
+
+    // Luu
     if (!$errors) {
         $stmt = $conn->prepare("
             INSERT INTO customers (name, phone, email, id_card)
@@ -37,10 +57,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h2>Them khach hang</h2>
 
 <form method="post">
-    Ten*: <input type="text" name="name" value="<?= htmlspecialchars($name) ?>"><br><br>
-    SDT*: <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>"><br><br>
-    Email: <input type="text" name="email" value="<?= htmlspecialchars($email) ?>"><br><br>
-    CCCD: <input type="text" name="id_card" value="<?= htmlspecialchars($id_card) ?>"><br><br>
+    Ten*: <br>
+    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>"><br><br>
+
+    SDT*: <br>
+    <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>"><br><br>
+
+    Email: <br>
+    <input type="text" name="email" value="<?= htmlspecialchars($email) ?>"><br><br>
+
+    CCCD (khong duoc trung): <br>
+    <input type="text" name="id_card" value="<?= htmlspecialchars($id_card) ?>"><br><br>
 
     <button type="submit">Luu</button>
 </form>
