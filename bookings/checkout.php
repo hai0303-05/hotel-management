@@ -22,7 +22,7 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'search') {
 }
 
 /* =========================
-   LẤY BOOKING ĐANG Ở
+   LẤY BOOKING ĐANG Ở (KHÔNG ÂM NGÀY)
 ========================= */
 if (isset($_GET['ajax']) && $_GET['ajax'] === 'detail') {
     $customer_id = (int)$_GET['customer_id'];
@@ -36,8 +36,19 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'detail') {
             r.price,
             b.check_in,
             COALESCE(b.check_out, CURDATE()) AS check_out,
-            DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in) AS days,
-            DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in) * r.price AS total_price
+
+            /* SỐ NGÀY TỐI THIỂU = 1 */
+            GREATEST(
+                DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in),
+                1
+            ) AS days,
+
+            /* TỔNG TIỀN KHÔNG ÂM */
+            GREATEST(
+                DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in),
+                1
+            ) * r.price AS total_price
+
         FROM bookings b
         JOIN rooms r ON b.room_id = r.id
         WHERE b.customer_id = ?
@@ -58,38 +69,25 @@ if (isset($_GET['ajax']) && $_GET['ajax'] === 'detail') {
 }
 
 /* =========================
-   CHECK OUT
+   CHECK OUT → CHUYỂN SANG HÓA ĐƠN (list.php)
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $booking_id = (int)$_POST['booking_id'];
-    $room_id    = (int)$_POST['room_id'];
 
-    // 1. XÓA booking (khách biến mất khỏi bảng bookings)
-    $stmt = $conn->prepare("DELETE FROM bookings WHERE id = ?");
-    $stmt->bind_param("i", $booking_id);
-    $stmt->execute();
+    if ($booking_id <= 0) {
+        die("Booking không hợp lệ");
+    }
 
-    // 2. TRẢ PHÒNG
-    $stmt = $conn->prepare("
-        UPDATE rooms 
-        SET status = 'available' 
-        WHERE id = ?
-    ");
-    $stmt->bind_param("i", $room_id);
-    $stmt->execute();
-
-    echo "<script>
-        alert('Check out thành công');
-        location.reload();
-    </script>";
+    /* CHỈ CHUYỂN TRANG – KHÔNG XÓA BOOKING */
+    header("Location: list.php?booking_id=$booking_id");
     exit;
 }
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <title>Check out</title>
 </head>
 <body>
@@ -104,7 +102,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <form method="post">
     <input type="hidden" name="booking_id" id="booking_id">
-    <input type="hidden" name="room_id" id="room_id">
 
     <p>Khách hàng: <span id="name"></span></p>
     <p>CCCD: <span id="id_card"></span></p>
@@ -152,7 +149,6 @@ function selectCustomer(id, name, id_card) {
             }
 
             document.getElementById('booking_id').value = d.booking_id;
-            document.getElementById('room_id').value = d.room_id;
 
             document.getElementById('room').innerText =
                 d.room_number + " - " + d.room_type;
