@@ -1,32 +1,29 @@
 <?php
-session_start();
+if (!defined('IN_INDEX')) die('Access denied');
 require_once "../config/db.php";
 
-$id = $_GET['id'];
+$id = $_GET['id'] ?? 0;
 $room = $conn->query("SELECT * FROM rooms WHERE id = $id")->fetch_assoc();
 
 $error = "";
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $room_number = trim($_POST['room_number']);
     $room_type   = trim($_POST['room_type']);
     $price       = trim($_POST['price']);
 
-    // 1. Không cho để trống
-    if ($room_number == "" || $room_type == "" || $price == "") {
-        $error = "Please fill in all fields.";
+    if ($room_number === "" || $room_type === "" || $price === "") {
+        $error = "Vui lòng nhập đầy đủ thông tin.";
     } else {
-        // 2. Không cho trùng số phòng (trừ chính nó)
         $check = $conn->query(
             "SELECT id FROM rooms 
              WHERE room_number = '$room_number' AND id != $id"
         );
 
         if ($check->num_rows > 0) {
-            $error = "Room number already exists.";
+            $error = "Số phòng đã tồn tại.";
         } else {
-            // 3. Update KHÔNG ĐỘNG status
             $conn->query(
                 "UPDATE rooms SET
                     room_number = '$room_number',
@@ -34,48 +31,41 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     price       = '$price'
                  WHERE id = $id"
             );
-            header("Location: list.php");
+
+            header("Location: index.php?page=rooms");
             exit;
         }
     }
 }
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Edit Room</title>
-    <link rel="stylesheet" href="../assets/style.css">
-</head>
-<body>
 <div class="container">
-    <h2 class="page-title">Edit Room</h2>
+    <h2 class="page-title">Sửa phòng</h2>
 
-    <?php if ($error != "") { ?>
+    <?php if ($error): ?>
         <p style="color:red"><?= $error ?></p>
-    <?php } ?>
+    <?php endif; ?>
 
     <form method="post">
         <div class="form-group">
-            <label>Room Number</label>
+            <label>Số phòng</label>
             <input class="form-control" name="room_number"
                    value="<?= $room['room_number'] ?>" required>
         </div>
 
         <div class="form-group">
-            <label>Room Type</label>
+            <label>Loại phòng</label>
             <input class="form-control" name="room_type"
                    value="<?= $room['room_type'] ?>" required>
         </div>
 
         <div class="form-group">
-            <label>Price</label>
+            <label>Giá</label>
             <input class="form-control" type="number" name="price"
                    value="<?= $room['price'] ?>" required>
         </div>
 
-        <button class="btn btn-primary">Update</button>
+        <button class="btn btn-primary">Cập nhật</button>
+        <a href="index.php?page=rooms" class="btn">Quay lại</a>
     </form>
 </div>
-</body>
-</html>
