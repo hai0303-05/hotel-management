@@ -1,0 +1,146 @@
+/* ==============================
+   ROOMS MODULE STYLE
+   Works with index.css
+   ============================== */
+
+/* ===== PAGE TITLE ===== */
+.page-title {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* ===== FILTER BAR ===== */
+.rooms-filter {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 18px;
+    padding: 12px;
+    background: #f5f7fa;
+    border-radius: 8px;
+}
+
+.rooms-filter .form-control {
+    width: 180px;
+}
+
+/* ===== ACTION BAR ===== */
+.rooms-actions {
+    margin-bottom: 15px;
+}
+
+/* ===== TABLE ===== */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table th {
+    background: #f0f2f5;
+    padding: 12px;
+    text-align: center;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 1px solid #ddd;
+}
+
+.table td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.table tr:hover {
+    background: #f9fafb;
+}
+
+/* ===== ROOM STATUS ===== */
+.room-status-available {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #eafaf1;
+    color: #27ae60;
+}
+
+.room-status-booked {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    background: #fdecea;
+    color: #c0392b;
+}
+
+/* ===== SOON AVAILABLE WARNING ===== */
+.room-warning {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 3px 8px;
+    font-size: 12px;
+    background: #f1c40f;
+    color: #000;
+    border-radius: 10px;
+}
+
+/* ===== FORM ===== */
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+/* ===== BUTTONS ===== */
+.btn {
+    padding: 6px 14px;
+    border-radius: 4px;
+    font-size: 14px;
+    text-decoration: none;
+    cursor: pointer;
+    display: inline-block;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+/* ===== EMPTY STATE ===== */
+.rooms-empty {
+    text-align: center;
+    padding: 30px;
+    color: #777;
+    font-style: italic;
+}
