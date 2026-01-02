@@ -1,11 +1,10 @@
 <?php
-require_once '../auth/check_login.php';
-checkRole('admin');
-require_once '../config/db.php';
+if (!defined('IN_INDEX')) die('Access denied');
+require_once 'config/db.php';
 
 $error = '';
 
-/* ===== THEM TAI KHOAN ===== */
+/* ===== THEM ===== */
 if (isset($_POST['add'])) {
     $username = trim($_POST['username']);
     $password = trim($_POST['password']);
@@ -14,7 +13,6 @@ if (isset($_POST['add'])) {
     if ($username == '' || $password == '') {
         $error = "Khong duoc de trong username hoac password";
     } else {
-        // Kiem tra trung username
         $check = mysqli_query($conn,
             "SELECT id FROM users WHERE username='$username'"
         );
@@ -24,55 +22,80 @@ if (isset($_POST['add'])) {
         } else {
             $password = md5($password);
             mysqli_query($conn,
-                "INSERT INTO users(username, password, role)
-                 VALUES('$username', '$password', '$role')"
+                "INSERT INTO users(username,password,role)
+                 VALUES('$username','$password','$role')"
             );
-            header("Location: users.php");
+            header("Location: index.php?page=admin_users");
             exit;
         }
     }
 }
 
-/* ===== XOA TAI KHOAN ===== */
+/* ===== XOA ===== */
 if (isset($_GET['delete'])) {
     $id = $_GET['delete'];
-    mysqli_query($conn, "DELETE FROM users WHERE id=$id");
-    header("Location: users.php");
+
+    // Khong cho xoa tai khoan dang dang nhap
+    if ($id != $_SESSION['user_id']) {
+        mysqli_query($conn, "DELETE FROM users WHERE id=$id");
+    }
+
+    header("Location: index.php?page=admin_users");
     exit;
 }
 
-/* ===== SUA TAI KHOAN (KEM DOI MAT KHAU) ===== */
+/* ===== SUA ===== */
 if (isset($_POST['update'])) {
     $id = $_POST['id'];
     $username = trim($_POST['username']);
     $role = $_POST['role'];
-    $newpass = trim($_POST['new_password']);
+    $new_password = trim($_POST['new_password']);
 
     if ($username == '') {
         $error = "Username khong duoc de trong";
     } else {
-        // Neu co nhap mat khau moi
-        if ($newpass != '') {
-            $newpass = md5($newpass);
-            mysqli_query($conn,
-                "UPDATE users 
-                 SET username='$username', role='$role', password='$newpass'
-                 WHERE id=$id"
-            );
+
+        // NEU LA TAI KHOAN DANG DANG NHAP -> KHONG DOI ROLE
+        if ($id == $_SESSION['user_id']) {
+
+            if ($new_password != '') {
+                $new_password = md5($new_password);
+                mysqli_query($conn,
+                    "UPDATE users
+                     SET username='$username', password='$new_password'
+                     WHERE id=$id"
+                );
+            } else {
+                mysqli_query($conn,
+                    "UPDATE users
+                     SET username='$username'
+                     WHERE id=$id"
+                );
+            }
+
         } else {
-            // Khong doi mat khau
-            mysqli_query($conn,
-                "UPDATE users 
-                 SET username='$username', role='$role'
-                 WHERE id=$id"
-            );
+            // Tai khoan khac -> doi ca role
+            if ($new_password != '') {
+                $new_password = md5($new_password);
+                mysqli_query($conn,
+                    "UPDATE users
+                     SET username='$username', role='$role', password='$new_password'
+                     WHERE id=$id"
+                );
+            } else {
+                mysqli_query($conn,
+                    "UPDATE users
+                     SET username='$username', role='$role'
+                     WHERE id=$id"
+                );
+            }
         }
-        header("Location: users.php");
+
+        header("Location: index.php?page=admin_users");
         exit;
     }
 }
 
-/* ===== LAY DANH SACH ===== */
 $result = mysqli_query($conn, "SELECT * FROM users");
 ?>
 
@@ -81,98 +104,93 @@ $result = mysqli_query($conn, "SELECT * FROM users");
 <head>
     <meta charset="UTF-8">
     <title>Quan ly tai khoan</title>
+    <link rel="stylesheet" href="assets/admin.css">
 </head>
 <body>
 
-<h2>Quan ly tai khoan nhan vien</h2>
+<div class="container">
+    <h2 class="page-title">Quản lý tài khoản</h2>
 
-<p>Xin chao Admin: <b><?php echo $_SESSION['username']; ?></b></p>
+    <p>Xin chào: <b><?php echo $_SESSION['username']; ?></b></p>
 
-<?php if ($error != '') { ?>
-<p style="color:red;"><?php echo $error; ?></p>
-<?php } ?>
+    <?php if ($error != '') { ?>
+        <p class="error"><?php echo $error; ?></p>
+    <?php } ?>
 
-<!-- ===== FORM THEM ===== -->
-<h3>Them tai khoan</h3>
-<form method="post">
-    Username:
-    <input type="text" name="username">
-    Password:
-    <input type="password" name="password">
-    Role:
-    <select name="role">
-        <option value="staff">Nhan vien</option>
-        <option value="admin">Admin</option>
-    </select>
-    <button type="submit" name="add">Them</button>
-</form>
+    <h3>Thêm tài khoản</h3>
+    <form method="post">
+        <div class="form-group">
+            <input type="text" name="username" class="form-control" placeholder="Username">
+        </div>
+        <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Password">
+        </div>
+        <div class="form-group">
+            <select name="role" class="form-control">
+                <option value="staff">Nhân viên</option>
+                <option value="admin">Quản lý</option>
+            </select>
+        </div>
+        <button type="submit" name="add" class="btn btn-primary">THÊM</button>
+    </form>
 
-<hr>
+    <hr>
 
-<!-- ===== DANH SACH ===== -->
-<h3>Danh sach tai khoan</h3>
-<table border="1" cellpadding="5">
-    <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Role</th>
-        <th>Mat khau moi</th>
-        <th>Hanh dong</th>
-    </tr>
+    <table class="table">
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Role</th>
+            <th>Mật khẩu mới</th>
+            <th>Hành động</th>
+        </tr>
 
-<?php while ($row = mysqli_fetch_assoc($result)) { ?>
-<tr>
-<form method="post">
-    <td><?php echo $row['id']; ?></td>
+        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+        <tr>
+        <form method="post">
+            <td><?php echo $row['id']; ?></td>
 
-    <td>
-        <input type="text" name="username"
-               value="<?php echo $row['username']; ?>">
-    </td>
+            <td>
+                <input type="text" name="username" class="form-control"
+                       value="<?php echo $row['username']; ?>">
+            </td>
 
-    <td>
-        <select name="role">
-            <option value="admin"
-                <?php if ($row['role']=='admin') echo 'selected'; ?>>
-                Admin
-            </option>
-            <option value="staff"
-                <?php if ($row['role']=='staff') echo 'selected'; ?>>
-                Nhan vien
-            </option>
-        </select>
-    </td>
+            <td>
+                <?php if ($row['id'] == $_SESSION['user_id']) { ?>
+                    <!-- Khong cho doi role tai khoan hien tai -->
+                    <input type="text" class="form-control"
+                           value="<?php echo $row['role']; ?>" disabled>
+                <?php } else { ?>
+                    <select name="role" class="form-control">
+                        <option value="admin" <?php if ($row['role']=='admin') echo 'selected'; ?>>Quản lý </option>
+                        <option value="staff" <?php if ($row['role']=='staff') echo 'selected'; ?>>Nhân viên</option>
+                    </select>
+                <?php } ?>
+            </td>
 
-    <td>
-        <input type="password" name="new_password"
-               placeholder="Bo trong neu khong doi">
-    </td>
+            <td>
+                <input type="password" name="new_password" class="form-control">
+            </td>
 
-    <td>
-        <input type="hidden" name="id"
-               value="<?php echo $row['id']; ?>">
-        <button type="submit" name="update">Sua</button>
+            <td>
+                <input type="hidden" name="id" value="<?php echo $row['id']; ?>">
+                <button type="submit" name="update" class="btn btn-primary">Sửa</button>
 
-        <?php if ($row['id'] != $_SESSION['user_id']) { ?>
-            | <a href="users.php?delete=<?php echo $row['id']; ?>"
-                 onclick="return confirm('Xoa tai khoan nay?')">
-                 Xoa
-              </a>
-        <?php } else { ?>
-            | <i>(Tai khoan dang dang nhap)</i>
+                <?php if ($row['id'] != $_SESSION['user_id']) { ?>
+                    <a href="index.php?page=admin_users&delete=<?php echo $row['id']; ?>"
+                       class="btn btn-danger"
+                       onclick="return confirm('Xóa tài khỏan này?')">
+                        Xóa
+                    </a>
+                <?php } else { ?>
+                    <i>(Tài khoản hiện tại )</i>
+                <?php } ?>
+            </td>
+        </form>
+        </tr>
         <?php } ?>
-    </td>
-</form>
-</tr>
-<?php } ?>
-
-</table>
-
-<p>
-    
-    <a href="../index.php">Trang chu</a> |
-    
-</p>
+    </table>
+</div>
 
 </body>
 </html>
