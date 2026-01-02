@@ -1,19 +1,17 @@
 <?php
-session_start();
-require_once "../config/db.php";
+if (!defined('IN_INDEX')) die('Access denied');
+require_once "config/db.php";
 
-$id = $_GET['id'];
+$id = $_GET['id'] ?? 0;
 
-// Kiểm tra trạng thái phòng
 $room = $conn->query("SELECT status FROM rooms WHERE id = $id")->fetch_assoc();
 
-// Nếu phòng đang booked → không cho xóa
-if ($room['status'] == 'booked') {
-    header("Location: list.php?error=booked");
+if ($room && $room['status'] === 'booked') {
+    header("Location: index.php?page=rooms");
     exit;
 }
 
-// Nếu available thì cho xóa
 $conn->query("DELETE FROM rooms WHERE id = $id");
-header("Location: list.php");
+
+header("Location: index.php?page=rooms");
 exit;

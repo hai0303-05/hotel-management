@@ -31,12 +31,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Dang nhap</title>
-    <link rel="stylesheet" href="../assets/style.css">
+    <link rel="stylesheet" href="../assets/auth.css">
 </head>
 <body>
 
 <div class="container">
-    <h2 class="page-title">Dang nhap he thong</h2>
+    <h2 class="page-title">Đăng nhập</h2>
 
     <?php if ($error != '') { ?>
         <p class="error"><?php echo $error; ?></p>

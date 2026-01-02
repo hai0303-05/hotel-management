@@ -1,147 +1,98 @@
 <?php
-require_once '../auth/check_login.php';
-checkRole('admin');
-require_once '../config/db.php';
+if (!defined('IN_INDEX')) die('Access denied');
+require_once 'config/db.php';
 
-/* ===== THONG KE CO BAN ===== */
-$room_count = mysqli_fetch_assoc(
-    mysqli_query($conn, "SELECT COUNT(*) AS total FROM rooms")
-)['total'];
+/* ===== TỔNG QUAN ===== */
+$room_count = $conn->query("SELECT COUNT(*) AS total FROM rooms")->fetch_assoc()['total'];
+$customer_count = $conn->query("SELECT COUNT(*) AS total FROM customers")->fetch_assoc()['total'];
+$booking_count = $conn->query("SELECT COUNT(*) AS total FROM bookings")->fetch_assoc()['total'];
 
-$customer_count = mysqli_fetch_assoc(
-    mysqli_query($conn, "SELECT COUNT(*) AS total FROM customers")
-)['total'];
+$revenue = $conn->query("SELECT SUM(total_price) AS total FROM bookings")
+                ->fetch_assoc()['total'] ?? 0;
 
-$booking_count = mysqli_fetch_assoc(
-    mysqli_query($conn, "SELECT COUNT(*) AS total FROM bookings")
-)['total'];
+/* ===== DOANH THU THEO THÁNG ===== */
+$month = $_GET['month'] ?? date('m');
+$year  = $_GET['year'] ?? date('Y');
 
-$revenue = mysqli_fetch_assoc(
-    mysqli_query($conn, "SELECT SUM(total_price) AS total FROM bookings")
-)['total'];
+$stmt = $conn->prepare("
+    SELECT SUM(total_price) AS total
+    FROM bookings
+    WHERE MONTH(check_in) = ?
+      AND YEAR(check_in) = ?
+");
+$stmt->bind_param("ii", $month, $year);
+$stmt->execute();
+$monthly_revenue = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
 
-if ($revenue == null) {
-    $revenue = 0;
-}
-
-/* ===== LOC DOANH THU THEO THANG NAM ===== */
-$month = isset($_GET['month']) ? $_GET['month'] : date('m');
-$year  = isset($_GET['year'])  ? $_GET['year']  : date('Y');
-
-$monthly_revenue = mysqli_fetch_assoc(
-    mysqli_query(
-        $conn,
-        "SELECT SUM(total_price) AS total 
-         FROM bookings 
-         WHERE MONTH(check_in) = $month 
-           AND YEAR(check_in) = $year"
-    )
-)['total'];
-
-if ($monthly_revenue == null) {
-    $monthly_revenue = 0;
-}
-
-/* ===== THONG KE DOANH THU TUNG THANG ===== */
-$revenue_by_month = mysqli_query(
-    $conn,
-    "SELECT 
-        MONTH(check_in) AS month,
+/* ===== DOANH THU THEO THÁNG (BẢNG) ===== */
+$revenue_by_month = $conn->query("
+    SELECT
         YEAR(check_in) AS year,
+        MONTH(check_in) AS month,
         SUM(total_price) AS total
-     FROM bookings
-     GROUP BY YEAR(check_in), MONTH(check_in)
-     ORDER BY year DESC, month DESC"
-);
+    FROM bookings
+    GROUP BY YEAR(check_in), MONTH(check_in)
+    ORDER BY year DESC, month DESC
+");
 ?>
 
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Thong ke he thong</title>
-    <link rel="stylesheet" href="../assets/style.css">
-</head>
-<body>
+<div class="admin-container">
 
-<div class="container">
-    <h2 class="page-title">Thong ke he thong</h2>
+    <h2 class="admin-title">Thống kê hệ thống</h2>
 
-    <p>Xin chao Admin: <b><?php echo $_SESSION['username']; ?></b></p>
+    <!-- ===== DASHBOARD ===== -->
+    <div class="admin-dashboard">
+        <div class="admin-card">
+            <span>Phòng</span>
+            <strong><?= $room_count ?></strong>
+        </div>
+        <div class="admin-card">
+            <span>Khách hàng</span>
+            <strong><?= $customer_count ?></strong>
+        </div>
+        <div class="admin-card">
+            <span>Đơn đặt phòng</span>
+            <strong><?= $booking_count ?></strong>
+        </div>
+        <div class="admin-card highlight">
+            <span>Tổng doanh thu</span>
+            <strong><?= number_format($revenue) ?> VND</strong>
+        </div>
+    </div>
 
-    <!-- ===== THONG KE TONG ===== -->
-    <table class="table">
-        <tr>
-            <th>Noi dung</th>
-            <th>So lieu</th>
-        </tr>
-        <tr>
-            <td>Tong so phong</td>
-            <td><?php echo $room_count; ?></td>
-        </tr>
-        <tr>
-            <td>Tong khach hang</td>
-            <td><?php echo $customer_count; ?></td>
-        </tr>
-        <tr>
-            <td>Tong don dat phong</td>
-            <td><?php echo $booking_count; ?></td>
-        </tr>
-        <tr>
-            <td><b>Tong doanh thu</b></td>
-            <td><b><?php echo number_format($revenue); ?> VND</b></td>
-        </tr>
-    </table>
+    <!-- ===== FILTER ===== -->
+    <form method="get" class="admin-filter">
+        <input type="hidden" name="page" value="admin_stats">
 
-    <br>
-
-    <!-- ===== LOC DOANH THU THEO THANG ===== -->
-    <h3>Doanh thu theo thang</h3>
-
-    <form method="get">
-        Thang:
         <input type="number" name="month" min="1" max="12"
-               value="<?php echo $month; ?>" class="form-control">
+               value="<?= $month ?>" class="form-control">
 
-        Nam:
         <input type="number" name="year"
-               value="<?php echo $year; ?>" class="form-control">
+               value="<?= $year ?>" class="form-control">
 
-        <button type="submit" class="btn btn-primary">Loc</button>
+        <button class="btn btn-primary">Lọc</button>
     </form>
 
-    <p>
-        <b>Doanh thu thang <?php echo $month . '/' . $year; ?>:</b>
-        <?php echo number_format($monthly_revenue); ?> VND
+    <p class="admin-monthly">
+        Doanh thu tháng <b><?= $month ?>/<?= $year ?></b>:
+        <b><?= number_format($monthly_revenue) ?> VND</b>
     </p>
 
-    <br>
-
-    <!-- ===== BANG DOANH THU TUNG THANG ===== -->
-    <h3>Thong ke doanh thu theo tung thang</h3>
-
-    <table class="table">
+    <!-- ===== TABLE ===== -->
+    <table class="table admin-table">
         <tr>
-            <th>Thang</th>
-            <th>Nam</th>
+            <th>Tháng</th>
+            <th>Năm</th>
             <th>Doanh thu (VND)</th>
         </tr>
 
-        <?php while ($row = mysqli_fetch_assoc($revenue_by_month)) { ?>
+        <?php while ($row = $revenue_by_month->fetch_assoc()): ?>
         <tr>
-            <td><?php echo $row['month']; ?></td>
-            <td><?php echo $row['year']; ?></td>
-            <td><?php echo number_format($row['total']); ?></td>
+            <td><?= $row['month'] ?></td>
+            <td><?= $row['year'] ?></td>
+            <td><?= number_format($row['total']) ?></td>
         </tr>
-        <?php } ?>
+        <?php endwhile; ?>
     </table>
 
-    <p>
-    
-        <a href="../index.php">Trang chu</a> |
-    
-    </p>
 </div>
-
-</body>
-</html>

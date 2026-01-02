@@ -1,20 +1,22 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 /* 1. Kiem tra da dang nhap chua */
 if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
+    header("Location: auth/login.php");
     exit();
 }
 
 /* 2. Ham kiem tra quyen */
 function checkRole($roleCanTruyCap) {
     if (!isset($_SESSION['role']) || $_SESSION['role'] !== $roleCanTruyCap) {
-        echo  "
-        <h2>Ban khong co quyen truy cap!</h2>
-        <p>
-            <a href='../index.php'>trang chu</a> |
-        </p>
+        echo "
+            <div style='padding:20px'>
+                <h2>Ban khong co quyen truy cap!</h2>
+                <a href='index.php'>Trang chu</a>
+            </div>
         ";
         exit();
     }
