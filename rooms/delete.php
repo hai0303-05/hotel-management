@@ -14,4 +14,8 @@ if ($room && $room['status'] === 'booked') {
 $conn->query("DELETE FROM rooms WHERE id = $id");
 
 header("Location: index.php?page=rooms");
+<<<<<<< Updated upstream
 exit;
+=======
+exit;
+>>>>>>> Stashed changes
