@@ -32,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
+
 <div class="container">
     <h2 class="page-title">Thêm phòng</h2>
 

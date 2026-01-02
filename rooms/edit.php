@@ -68,4 +68,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button class="btn btn-primary">Cập nhật</button>
         <a href="index.php?page=rooms" class="btn">Quay lại</a>
     </form>
-</div>
+</div> 
