@@ -1,14 +1,16 @@
 <?php
-require_once "../config/db.php";
+if (!defined('IN_INDEX')) die('Access denied');
+
+require_once 'config/db.php';
 
 /* =========================
    XỬ LÝ ĐẶT PHÒNG
 ========================= */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $name      = $_POST['name'];
-    $phone     = $_POST['phone'];
-    $id_card   = $_POST['id_card'];
+    $name      = trim($_POST['name']);
+    $phone     = trim($_POST['phone']);
+    $id_card   = trim($_POST['id_card']);
     $room_id   = (int)$_POST['room_id'];
     $check_in  = $_POST['check_in'];
     $check_out = $_POST['check_out'];
@@ -27,9 +29,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("i", $room_id);
     $stmt->execute();
     $room = $stmt->get_result()->fetch_assoc();
+
+    if (!$room) {
+        die('Phòng không tồn tại');
+    }
+
     $price = $room['price'];
 
-    /* 3. Tính số ngày */
+    /* 3. Tính số ngày (tối thiểu 1) */
     $days = (strtotime($check_out) - strtotime($check_in)) / 86400;
     if ($days < 1) $days = 1;
 
@@ -52,12 +59,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     /* 5. Cập nhật trạng thái phòng */
     $stmt = $conn->prepare("
-        UPDATE rooms SET status = 'booked' WHERE id = ?
+        UPDATE rooms
+        SET status = 'booked'
+        WHERE id = ?
     ");
     $stmt->bind_param("i", $room_id);
     $stmt->execute();
 
-    echo "<script>alert('Đặt phòng thành công'); location.href='add.php';</script>";
+    /* 6. Thông báo thành công rồi quay về form trống */
+    echo "<script>
+        alert('Đặt phòng thành công');
+        window.location.href = 'index.php?page=bookings';
+    </script>";
     exit;
 }
 
@@ -71,18 +84,9 @@ $rooms = $conn->query("
 ");
 ?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Đặt phòng</title>
-</head>
-<body>
-
 <h1>ĐẶT PHÒNG</h1>
 
 <form method="post">
-
     <label>Tên khách hàng</label><br>
     <input type="text" name="name" required><br><br>
 
@@ -95,11 +99,11 @@ $rooms = $conn->query("
     <label>Chọn phòng</label><br>
     <select name="room_id" required>
         <option value="">-- Chọn phòng --</option>
-        <?php while ($r = $rooms->fetch_assoc()) { ?>
+        <?php while ($r = $rooms->fetch_assoc()): ?>
             <option value="<?= $r['id'] ?>">
                 <?= $r['room_number'] ?> - <?= $r['room_type'] ?>
             </option>
-        <?php } ?>
+        <?php endwhile; ?>
     </select><br><br>
 
     <label>Ngày nhận phòng</label><br>
@@ -109,8 +113,4 @@ $rooms = $conn->query("
     <input type="date" name="check_out" required><br><br>
 
     <button type="submit">Đặt phòng</button>
-
 </form>
-
-</body>
-</html>
