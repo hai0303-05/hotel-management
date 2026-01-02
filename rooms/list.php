@@ -35,29 +35,34 @@ $result = $conn->query($sql);
 <div class="container">
     <h2 class="page-title">Quản lý phòng</h2>
 
-    <!-- ===== FILTER ===== -->
+    <?php if (!empty($_SESSION['error'])): ?>
+        <div class="alert alert-danger">
+            <?= $_SESSION['error'] ?>
+        </div>
+        <?php unset($_SESSION['error']); ?>
+    <?php endif; ?>
+
+    <!-- ===== FILTER + SEARCH ===== -->
     <form method="get" class="rooms-filter">
         <input type="hidden" name="page" value="rooms">
 
         <select name="status" class="form-control">
             <option value="">-- Trạng thái --</option>
-            <option value="available" <?= $status=='available'?'selected':'' ?>>
-                Available
-            </option>
-            <option value="booked" <?= $status=='booked'?'selected':'' ?>>
-                Booked
-            </option>
+            <option value="available" <?= $status === 'available' ? 'selected' : '' ?>>Available</option>
+            <option value="booked" <?= $status === 'booked' ? 'selected' : '' ?>>Booked</option>
         </select>
 
-        <input type="number" name="price_from"
-               class="form-control"
-               placeholder="Giá từ"
-               value="<?= $price_from ?>">
+        <input type="number" name="price_from" class="form-control" placeholder="Giá từ" value="<?= $price_from ?>">
+        <input type="number" name="price_to" class="form-control" placeholder="Giá đến" value="<?= $price_to ?>">
 
-        <input type="number" name="price_to"
-               class="form-control"
-               placeholder="Giá đến"
-               value="<?= $price_to ?>">
+        <!-- 🔍 SEARCH -->
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text"
+                   id="roomSearch"
+                   class="form-control"
+                   placeholder="Tìm số phòng / loại phòng">
+        </div>
 
         <button class="btn btn-primary">Lọc</button>
     </form>
@@ -68,20 +73,20 @@ $result = $conn->query($sql);
     </div>
 
     <!-- ===== TABLE ===== -->
-    <table class="table">
+    <table class="table rooms-table">
+        <thead>
         <tr>
-            <th>ID</th>
             <th>Số phòng</th>
             <th>Loại phòng</th>
             <th>Giá</th>
             <th>Trạng thái</th>
             <th>Thao tác</th>
         </tr>
-
+        </thead>
+        <tbody>
         <?php if ($result->num_rows > 0): ?>
             <?php while ($row = $result->fetch_assoc()): ?>
                 <tr>
-                    <td><?= $row['id'] ?></td>
                     <td><?= $row['room_number'] ?></td>
                     <td><?= $row['room_type'] ?></td>
                     <td><?= number_format($row['price']) ?></td>
@@ -90,7 +95,6 @@ $result = $conn->query($sql);
                             <span class="room-status-available">Available</span>
                         <?php else: ?>
                             <span class="room-status-booked">Booked</span>
-
                             <?php
                             if (!empty($row['check_out'])) {
                                 $daysLeft = (strtotime($row['check_out']) - time()) / 86400;
@@ -104,21 +108,51 @@ $result = $conn->query($sql);
                     <td>
                         <a class="btn btn-primary"
                            href="index.php?page=rooms_edit&id=<?= $row['id'] ?>">
-                           Sửa
+                            Sửa
                         </a>
 
-                        <a class="btn btn-danger"
-                           href="index.php?page=rooms_delete&id=<?= $row['id'] ?>"
-                           onclick="return confirm('Xóa phòng này?')">
-                           Xóa
-                        </a>
+                        <?php if ($row['status'] === 'available'): ?>
+                            <a class="btn btn-danger"
+                               href="index.php?page=rooms_delete&id=<?= $row['id'] ?>"
+                               onclick="return confirm('Xóa phòng này?')">
+                                Xóa
+                            </a>
+                        <?php else: ?>
+                            <span class="btn btn-lock" title="Phòng đang có khách">🔒</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endwhile; ?>
         <?php else: ?>
             <tr>
-                <td colspan="6" class="rooms-empty">Không có phòng</td>
+                <td colspan="5" class="rooms-empty">Không có phòng</td>
             </tr>
         <?php endif; ?>
+        </tbody>
     </table>
 </div>
+
+<!-- 🔍 REALTIME SEARCH + HIGHLIGHT -->
+<script>
+document.getElementById('roomSearch').addEventListener('keyup', function () {
+    const keyword = this.value.toLowerCase();
+    const rows = document.querySelectorAll('.rooms-table tbody tr');
+
+    rows.forEach(row => {
+        let text = row.innerText.toLowerCase();
+        row.style.display = text.includes(keyword) ? '' : 'none';
+
+        row.querySelectorAll('td').forEach(td => {
+            const original = td.dataset.text || td.innerText;
+            td.dataset.text = original;
+
+            if (keyword) {
+                const regex = new RegExp(`(${keyword})`, 'gi');
+                td.innerHTML = original.replace(regex, '<span class="highlight">$1</span>');
+            } else {
+                td.innerHTML = original;
+            }
+        });
+    });
+});
+</script>
