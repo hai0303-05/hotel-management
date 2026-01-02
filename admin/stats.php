@@ -4,11 +4,19 @@ require_once 'config/db.php';
 
 /* ===== TỔNG QUAN ===== */
 $total_rooms = $conn->query("SELECT COUNT(*) total FROM rooms")->fetch_assoc()['total'];
-$total_customers = $conn->query("SELECT COUNT(*) total FROM customers")->fetch_assoc()['total'];
-$total_bookings = $conn->query("SELECT COUNT(*) total FROM bookings")->fetch_assoc()['total'];
-$total_revenue = $conn->query("SELECT SUM(total_price) total FROM bookings")->fetch_assoc()['total'] ?? 0;
 
-/* ===== THÁNG HIỆN TẠI ===== */
+$summary = $conn->query("
+    SELECT 
+        COUNT(*) total_bookings,
+        SUM(total_price) total_revenue
+    FROM bookings
+    WHERE check_out IS NOT NULL
+")->fetch_assoc();
+
+$total_bookings = $summary['total_bookings'] ?? 0;
+$total_revenue  = $summary['total_revenue'] ?? 0;
+
+/* ===== THÁNG / NĂM ===== */
 $month = $_GET['month'] ?? date('m');
 $year  = $_GET['year']  ?? date('Y');
 
@@ -18,41 +26,26 @@ $stmt = $conn->prepare("
         COUNT(*) booking_count,
         SUM(total_price) revenue
     FROM bookings
-    WHERE MONTH(check_in)=? AND YEAR(check_in)=?
+    WHERE check_out IS NOT NULL
+      AND MONTH(check_out) = ?
+      AND YEAR(check_out) = ?
 ");
 $stmt->bind_param("ii", $month, $year);
 $stmt->execute();
 $current = $stmt->get_result()->fetch_assoc();
 
-$current_revenue = $current['revenue'] ?? 0;
 $current_bookings = $current['booking_count'] ?? 0;
+$current_revenue  = $current['revenue'] ?? 0;
 
-/* ===== THÁNG TRƯỚC ===== */
-$prev_month = $month - 1;
-$prev_year = $year;
-if ($prev_month == 0) {
-    $prev_month = 12;
-    $prev_year--;
-}
-
-$stmt->bind_param("ii", $prev_month, $prev_year);
-$stmt->execute();
-$prev = $stmt->get_result()->fetch_assoc();
-$prev_revenue = $prev['revenue'] ?? 0;
-
-/* ===== SO SÁNH ===== */
-$growth = $prev_revenue > 0
-    ? (($current_revenue - $prev_revenue) / $prev_revenue) * 100
-    : 0;
-
-/* ===== BÁO CÁO LỊCH SỬ ===== */
+/* ===== LỊCH SỬ ===== */
 $history = $conn->query("
     SELECT 
-        YEAR(check_in) year,
-        MONTH(check_in) month,
+        YEAR(check_out) year,
+        MONTH(check_out) month,
         COUNT(*) bookings,
         SUM(total_price) revenue
     FROM bookings
+    WHERE check_out IS NOT NULL
     GROUP BY year, month
     ORDER BY year DESC, month DESC
 ");
@@ -65,20 +58,16 @@ $history = $conn->query("
     <!-- KPI -->
     <div class="admin-dashboard">
         <div class="admin-card">
-            <span>Tổng phòng</span>
+            <span>Tổng số phòng</span>
             <strong><?= $total_rooms ?></strong>
         </div>
         <div class="admin-card">
-            <span>Đơn đặt phòng</span>
+            <span>Đơn đã hoàn tất</span>
             <strong><?= $total_bookings ?></strong>
         </div>
         <div class="admin-card highlight">
             <span>Tổng doanh thu</span>
             <strong><?= number_format($total_revenue) ?> VND</strong>
-        </div>
-        <div class="admin-card <?= $growth>=0?'up':'down' ?>">
-            <span>So với tháng trước</span>
-            <strong><?= number_format($growth,1) ?>%</strong>
         </div>
     </div>
 
@@ -87,7 +76,7 @@ $history = $conn->query("
         <input type="hidden" name="page" value="admin_stats">
         <input type="number" name="month" min="1" max="12" value="<?= $month ?>">
         <input type="number" name="year" value="<?= $year ?>">
-        <button class="btn btn-primary">Lọc</button>
+        <button class="btn btn-primary">Xem</button>
     </form>
 
     <p class="admin-monthly">
