@@ -1,21 +1,47 @@
 <?php
 require_once "../config/db.php";
 
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $name    = $_POST['name'];
-    $phone   = $_POST['phone'];
-    $email   = $_POST['email'];
-    $id_card = $_POST['id_card'];
+$name = $_POST['name'] ?? '';
+$phone = $_POST['phone'] ?? '';
+$email = $_POST['email'] ?? '';
+$id_card = $_POST['id_card'] ?? '';
+$errors = [];
 
-   
-    $sql = "INSERT INTO customers (name, phone, email, id_card)
-            VALUES ('$name', '$phone', '$email', '$id_card')";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    if ($conn->query($sql)) {
+    // Bat buoc
+    if ($name === '') {
+        $errors[] = "Ten bat buoc";
+    }
+
+    if ($phone === '') {
+        $errors[] = "SDT bat buoc";
+    }
+
+    // Kiem tra trung CCCD (neu co nhap)
+    if ($id_card !== '') {
+        $id_card = trim($id_card);
+        $check = $conn->query("
+            SELECT id FROM customers
+            WHERE id_card = '$id_card'
+        ");
+
+        if ($check && $check->num_rows > 0) {
+            $errors[] = "CCCD da ton tai, khong the them";
+        }
+    }
+
+    // Luu
+    if (!$errors) {
+        $stmt = $conn->prepare("
+            INSERT INTO customers (name, phone, email, id_card)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmt->bind_param("ssss", $name, $phone, $email, $id_card);
+        $stmt->execute();
+
         header("Location: list.php");
-        exit();
-    } else {
-        echo "Loi: " . $conn->error;
+        exit;
     }
 }
 ?>
@@ -31,20 +57,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <h2>Them khach hang</h2>
 
 <form method="post">
-    <label>Ten:</label><br>
-    <input type="text" name="name" required><br><br>
+    Ten*: <br>
+    <input type="text" name="name" value="<?= htmlspecialchars($name) ?>"><br><br>
 
-    <label>Phone:</label><br>
-    <input type="text" name="phone"><br><br>
+    SDT*: <br>
+    <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>"><br><br>
 
-    <label>Email:</label><br>
-    <input type="email" name="email"><br><br>
+    Email: <br>
+    <input type="text" name="email" value="<?= htmlspecialchars($email) ?>"><br><br>
 
-    <label>CCCD:</label><br>
-    <input type="text" name="id_card"><br><br>
+    CCCD (khong duoc trung): <br>
+    <input type="text" name="id_card" value="<?= htmlspecialchars($id_card) ?>"><br><br>
 
     <button type="submit">Luu</button>
 </form>
+
+<?php foreach ($errors as $e): ?>
+    <p style="color:red"><?= $e ?></p>
+<?php endforeach; ?>
 
 <br>
 <a href="list.php">Quay lai danh sach</a>
