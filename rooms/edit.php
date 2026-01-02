@@ -1,6 +1,6 @@
 <?php
 if (!defined('IN_INDEX')) die('Access denied');
-require_once "../config/db.php";
+require_once "config/db.php";
 
 $id = $_GET['id'] ?? 0;
 $room = $conn->query("SELECT * FROM rooms WHERE id = $id")->fetch_assoc();
