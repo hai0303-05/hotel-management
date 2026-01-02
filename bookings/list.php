@@ -1,27 +1,50 @@
 <?php
-require_once "../config/db.php";
+if (!defined('IN_INDEX')) die('Access denied');
+require_once 'config/db.php';
 
-/* =========================
-   XỬ LÝ XÁC NHẬN CHECK OUT (POST)
-========================= */
+/*
+|--------------------------------------------------------------------------
+| 1. KHÔNG CÓ booking_id → HIỂN THỊ FORM ĐẶT PHÒNG
+|--------------------------------------------------------------------------
+*/
+if (!isset($_GET['booking_id'])) {
+    include __DIR__ . '/add.php';
+    return;
+}
+
+/*
+|--------------------------------------------------------------------------
+| 2. CÓ booking_id → HIỂN THỊ HÓA ĐƠN + CHECK OUT
+|--------------------------------------------------------------------------
+*/
+$booking_id = (int)$_GET['booking_id'];
+if ($booking_id <= 0) {
+    echo "<h3>Booking không hợp lệ</h3>";
+    return;
+}
+
+/*
+|--------------------------------------------------------------------------
+| 3. XỬ LÝ CHECK OUT (POST)
+|--------------------------------------------------------------------------
+*/
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $booking_id = (int)($_POST['booking_id'] ?? 0);
-    $room_id    = (int)($_POST['room_id'] ?? 0);
+    $room_id = (int)($_POST['room_id'] ?? 0);
 
-    if ($booking_id <= 0 || $room_id <= 0) {
+    if ($room_id <= 0) {
         die("Thiếu dữ liệu check out");
     }
 
     $conn->begin_transaction();
 
     try {
-        // 1. XÓA BOOKING
+        // Xóa booking
         $stmt = $conn->prepare("DELETE FROM bookings WHERE id = ?");
         $stmt->bind_param("i", $booking_id);
         $stmt->execute();
 
-        // 2. TRẢ PHÒNG
+        // Trả phòng
         $stmt = $conn->prepare("
             UPDATE rooms 
             SET status = 'available'
@@ -34,7 +57,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         echo "<script>
             alert('Trả phòng thành công');
-            window.location.href = 'checkout.php';
+            window.location.href = 'index.php?page=bookings_checkout';
+
         </script>";
         exit;
 
@@ -44,14 +68,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-/* =========================
-   HIỂN THỊ HÓA ĐƠN (GET)
-========================= */
-$booking_id = (int)($_GET['booking_id'] ?? 0);
-if ($booking_id <= 0) {
-    die("Truy cập không hợp lệ");
-}
-
+/*
+|--------------------------------------------------------------------------
+| 4. LẤY DỮ LIỆU HÓA ĐƠN
+|--------------------------------------------------------------------------
+*/
 $stmt = $conn->prepare("
     SELECT
         b.id AS booking_id,
@@ -76,21 +97,14 @@ $stmt->execute();
 $data = $stmt->get_result()->fetch_assoc();
 
 if (!$data) {
-    die("Không tìm thấy hóa đơn");
+    echo "<h3>Không tìm thấy hóa đơn</h3>";
+    return;
 }
 
 /* QR DEMO */
 $qr_content = "Thanh toan phong {$data['room_number']} - {$data['total_price']} VND";
 $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qr_content);
 ?>
-
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-<meta charset="UTF-8">
-<title>Hóa đơn thanh toán</title>
-</head>
-<body>
 
 <h2>HÓA ĐƠN THANH TOÁN</h2>
 <hr>
@@ -118,13 +132,9 @@ $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . url
 <hr>
 
 <form method="post">
-    <input type="hidden" name="booking_id" value="<?= $data['booking_id'] ?>">
     <input type="hidden" name="room_id" value="<?= $data['room_id'] ?>">
     <button type="submit">XÁC NHẬN THANH TOÁN & CHECK OUT</button>
 </form>
 
 <br>
 <button onclick="window.print()">In hóa đơn</button>
-
-</body>
-</html>
