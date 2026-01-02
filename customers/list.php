@@ -1,21 +1,37 @@
 <?php
-/* ===== LIEN KET VOI INDEX (BAT BUOC) ===== */
 if (!defined('IN_INDEX')) die('Access denied');
 
 require_once 'config/db.php';
 
-/* ===== LAY TU KHOA TIM KIEM (XOA KHOANG TRANG THUA) ===== */
 $keyword = isset($_GET['q']) ? trim($_GET['q']) : '';
 
-/* ===== XU LY XOA KHACH HANG (VI INDEX KHONG CO ROUTE DELETE) ===== */
-if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['id'])) {
+$delete_error = '';
+
+if (
+    isset($_GET['action']) &&
+    $_GET['action'] === 'delete' &&
+    isset($_GET['id'])
+) {
     $id = (int)$_GET['id'];
-    $conn->query("DELETE FROM customers WHERE id = $id");
-    header("Location: index.php?page=customers");
-    exit;
+
+    // Check con booking hay khong
+    $check = $conn->query("
+        SELECT COUNT(*) AS total
+        FROM bookings
+        WHERE customer_id = $id
+    ");
+    $rowCheck = $check->fetch_assoc();
+
+    if ($rowCheck['total'] > 0) {
+        $delete_error = "Khong the xoa khach hang vi van con booking";
+    } else {
+        $conn->query("DELETE FROM customers WHERE id = $id");
+        header("Location: index.php?page=customers");
+        exit;
+    }
 }
 
-/* ===== SQL LAY DANH SACH KHACH + TRANG THAI ===== */
+/* ===== SQL LAY DANH SACH KHACH + TRANG THAI TU BOOKING ===== */
 $sql = "
 SELECT
     c.id,
@@ -23,32 +39,41 @@ SELECT
     c.phone,
     c.email,
     c.id_card,
+
     CASE
-        -- Dang luu tru: da check-in, chua check-out
+        -- Dang o: hom nay nam trong khoang check-in -> check-out
         WHEN EXISTS (
             SELECT 1 FROM bookings b
             WHERE b.customer_id = c.id
-              AND b.check_in IS NOT NULL
-              AND b.check_out IS NULL
-        ) THEN 'Dang luu tru'
+              AND b.check_in <= CURRENT_DATE
+              AND b.check_out >= CURRENT_DATE
+        ) THEN 'Dang o'
 
-        -- Dat phong: co booking nhung chua check-in
+        -- Dat truoc: check-in trong tuong lai
         WHEN EXISTS (
             SELECT 1 FROM bookings b
             WHERE b.customer_id = c.id
-              AND b.check_in IS NULL
-        ) THEN 'Dat phong (chua check-in)'
+              AND b.check_in > CURRENT_DATE
+        ) THEN 'Dat truoc'
 
-        -- Da tung luu tru
+        -- Da tung o: da check-out truoc hom nay
         WHEN EXISTS (
             SELECT 1 FROM bookings b
             WHERE b.customer_id = c.id
-              AND b.check_out IS NOT NULL
-        ) THEN 'Da tung luu tru'
+              AND b.check_out < CURRENT_DATE
+        ) THEN 'Da tung o'
 
-        -- Khach moi
-        ELSE 'Dat phong (chua check-in)'
-    END AS trang_thai
+        -- Khong co booking
+        ELSE 'Dat truoc'
+    END AS trang_thai,
+
+    -- Dem so booking (de chan xoa)
+    (
+        SELECT COUNT(*)
+        FROM bookings b
+        WHERE b.customer_id = c.id
+    ) AS booking_count
+
 FROM customers c
 WHERE 1
 ";
@@ -71,7 +96,13 @@ $sql .= " ORDER BY c.id DESC";
 $result = $conn->query($sql);
 ?>
 
-<h2>Danh sách khách hàng</h2>
+<h2>Danh sach khach hang</h2>
+
+<?php if ($delete_error): ?>
+    <p style="color:red; font-weight:bold">
+        <?php echo $delete_error; ?>
+    </p>
+<?php endif; ?>
 
 <form method="get">
     <input type="hidden" name="page" value="customers">
@@ -116,7 +147,7 @@ if ($result && $result->num_rows > 0):
     <td>
         <a href="index.php?page=customers_edit&id=<?php echo $row['id']; ?>">Sua</a>
         |
-        <?php if ($row['trang_thai'] === 'Dang luu tru'): ?>
+        <?php if ($row['booking_count'] > 0): ?>
             <span>Khong the xoa</span>
         <?php else: ?>
             <a
