@@ -121,4 +121,8 @@ $result = $conn->query($sql);
             </tr>
         <?php endif; ?>
     </table>
+<<<<<<< HEAD
 </div>
+=======
+</div>
+>>>>>>> rescue-full-code
