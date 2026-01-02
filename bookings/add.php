@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $price = $room['price'];
 
-    /* 3. Tính số ngày (tối thiểu 1) */
+    /* 3. Tính số ngày */
     $days = (strtotime($check_out) - strtotime($check_in)) / 86400;
     if ($days < 1) $days = 1;
 
@@ -47,14 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         INSERT INTO bookings (room_id, customer_id, check_in, check_out, total_price)
         VALUES (?, ?, ?, ?, ?)
     ");
-    $stmt->bind_param(
-        "iissd",
-        $room_id,
-        $customer_id,
-        $check_in,
-        $check_out,
-        $total_price
-    );
+    $stmt->bind_param("iissd", $room_id, $customer_id, $check_in, $check_out, $total_price);
     $stmt->execute();
 
     /* 5. Cập nhật trạng thái phòng */
@@ -66,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->bind_param("i", $room_id);
     $stmt->execute();
 
-    /* 6. Thông báo thành công rồi quay về form trống */
+    /* 6. Quay về form */
     echo "<script>
         alert('Đặt phòng thành công');
         window.location.href = 'index.php?page=bookings';
@@ -84,33 +77,54 @@ $rooms = $conn->query("
 ");
 ?>
 
-<h1>ĐẶT PHÒNG</h1>
+<!-- =========================
+     GIAO DIỆN (CÓ CLASS CSS)
+========================= -->
 
-<form method="post">
-    <label>Tên khách hàng</label><br>
-    <input type="text" name="name" required><br><br>
+<div class="booking-wrapper">
 
-    <label>Số điện thoại</label><br>
-    <input type="text" name="phone" required><br><br>
+    <h1 class="booking-title">ĐẶT PHÒNG</h1>
 
-    <label>Căn cước công dân</label><br>
-    <input type="text" name="id_card"><br><br>
+    <form method="post" class="booking-form">
 
-    <label>Chọn phòng</label><br>
-    <select name="room_id" required>
-        <option value="">-- Chọn phòng --</option>
-        <?php while ($r = $rooms->fetch_assoc()): ?>
-            <option value="<?= $r['id'] ?>">
-                <?= $r['room_number'] ?> - <?= $r['room_type'] ?>
-            </option>
-        <?php endwhile; ?>
-    </select><br><br>
+        <div class="form-group">
+            <label>Tên khách hàng</label>
+            <input type="text" name="name" required>
+        </div>
 
-    <label>Ngày nhận phòng</label><br>
-    <input type="date" name="check_in" required><br><br>
+        <div class="form-group">
+            <label>Số điện thoại</label>
+            <input type="text" name="phone" required>
+        </div>
 
-    <label>Ngày trả phòng</label><br>
-    <input type="date" name="check_out" required><br><br>
+        <div class="form-group">
+            <label>Căn cước công dân</label>
+            <input type="text" name="id_card">
+        </div>
 
-    <button type="submit">Đặt phòng</button>
-</form>
+        <div class="form-group">
+            <label>Chọn phòng</label>
+            <select name="room_id" required>
+                <option value="">-- Chọn phòng --</option>
+                <?php while ($r = $rooms->fetch_assoc()): ?>
+                    <option value="<?= $r['id'] ?>">
+                        <?= $r['room_number'] ?> - <?= $r['room_type'] ?>
+                    </option>
+                <?php endwhile; ?>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Ngày nhận phòng</label>
+            <input type="date" name="check_in" required>
+        </div>
+
+        <div class="form-group">
+            <label>Ngày trả phòng</label>
+            <input type="date" name="check_out" required>
+        </div>
+
+        <button type="submit" class="booking-btn">Đặt phòng</button>
+
+    </form>
+</div>

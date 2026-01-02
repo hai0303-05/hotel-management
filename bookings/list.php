@@ -19,7 +19,7 @@ if (!isset($_GET['booking_id'])) {
 */
 $booking_id = (int)$_GET['booking_id'];
 if ($booking_id <= 0) {
-    echo "<h3>Booking không hợp lệ</h3>";
+    echo "<p class='empty-text'>Booking không hợp lệ</p>";
     return;
 }
 
@@ -39,12 +39,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        // Xóa booking
         $stmt = $conn->prepare("DELETE FROM bookings WHERE id = ?");
         $stmt->bind_param("i", $booking_id);
         $stmt->execute();
 
-        // Trả phòng
         $stmt = $conn->prepare("
             UPDATE rooms 
             SET status = 'available'
@@ -58,7 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<script>
             alert('Trả phòng thành công');
             window.location.href = 'index.php?page=bookings_checkout';
-
         </script>";
         exit;
 
@@ -97,7 +94,7 @@ $stmt->execute();
 $data = $stmt->get_result()->fetch_assoc();
 
 if (!$data) {
-    echo "<h3>Không tìm thấy hóa đơn</h3>";
+    echo "<p class='empty-text'>Không tìm thấy hóa đơn</p>";
     return;
 }
 
@@ -106,35 +103,44 @@ $qr_content = "Thanh toan phong {$data['room_number']} - {$data['total_price']} 
 $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qr_content);
 ?>
 
-<h2>HÓA ĐƠN THANH TOÁN</h2>
-<hr>
+<!-- ================= GIAO DIỆN ================= -->
+<div class="booking-wrapper">
 
-<p><strong>Khách hàng:</strong> <?= htmlspecialchars($data['name']) ?></p>
-<p><strong>SĐT:</strong> <?= htmlspecialchars($data['phone']) ?></p>
-<p><strong>CCCD:</strong> <?= htmlspecialchars($data['id_card']) ?></p>
+    <h1 class="booking-title">HÓA ĐƠN THANH TOÁN</h1>
 
-<hr>
+    <div class="invoice-box">
 
-<p><strong>Phòng:</strong> <?= $data['room_number'] ?> - <?= $data['room_type'] ?></p>
-<p><strong>Ngày nhận:</strong> <?= $data['check_in'] ?></p>
-<p><strong>Ngày trả:</strong> <?= $data['check_out'] ?></p>
-<p><strong>Số ngày:</strong> <?= $data['days'] ?></p>
+        <p><strong>Khách hàng:</strong> <?= htmlspecialchars($data['name']) ?></p>
+        <p><strong>SĐT:</strong> <?= htmlspecialchars($data['phone']) ?></p>
+        <p><strong>CCCD:</strong> <?= htmlspecialchars($data['id_card']) ?></p>
 
-<hr>
+       
 
-<h3>TỔNG TIỀN: <?= number_format($data['total_price']) ?> VND</h3>
+        <p><strong>Phòng:</strong> <?= $data['room_number'] ?> – <?= $data['room_type'] ?></p>
+        <p><strong>Ngày nhận:</strong> <?= $data['check_in'] ?></p>
+        <p><strong>Ngày trả:</strong> <?= $data['check_out'] ?></p>
+        <p><strong>Số ngày:</strong> <?= $data['days'] ?></p>
 
-<hr>
+        <h3 class="total-price">
+            Tổng tiền: <?= number_format($data['total_price']) ?> VND
+        </h3>
 
-<h4>Quét mã QR để thanh toán</h4>
-<img src="<?= $qr_url ?>" alt="QR thanh toán">
+        <div class="qr-box">
+            <p><strong>Quét mã QR để thanh toán</strong></p>
+            <img src="<?= $qr_url ?>" alt="QR thanh toán">
+        </div>
 
-<hr>
+        <form method="post">
+            <input type="hidden" name="room_id" value="<?= $data['room_id'] ?>">
+            <button type="submit" class="booking-btn danger">
+                XÁC NHẬN THANH TOÁN & CHECK OUT
+            </button>
+        </form>
 
-<form method="post">
-    <input type="hidden" name="room_id" value="<?= $data['room_id'] ?>">
-    <button type="submit">XÁC NHẬN THANH TOÁN & CHECK OUT</button>
-</form>
+        <button onclick="window.print()" class="booking-btn secondary">
+            In hóa đơn
+        </button>
 
-<br>
-<button onclick="window.print()">In hóa đơn</button>
+    </div>
+
+</div>
