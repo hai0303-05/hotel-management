@@ -58,12 +58,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button class="btn btn-primary">Lưu</button>
         <a href="index.php?page=rooms" class="btn">Quay lại</a>
     </form>
-<<<<<<< HEAD
-<<<<<<< Updated upstream
 </div>
-=======
-</div>
->>>>>>> Stashed changes
-=======
-</div>
->>>>>>> rescue-full-code
