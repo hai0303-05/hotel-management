@@ -32,31 +32,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-
 <div class="container">
-    <h2 class="page-title">Thêm phòng</h2>
+    <div class="room-form">
+        <h2>Thêm phòng</h2>
 
-    <?php if ($error): ?>
-        <p style="color:red"><?= $error ?></p>
-    <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
 
-    <form method="post">
-        <div class="form-group">
-            <label>Số phòng</label>
-            <input class="form-control" name="room_number" required>
-        </div>
+        <form method="post">
+            <div class="form-group">
+                <label>Số phòng</label>
+                <input type="text" name="room_number" required>
+            </div>
 
-        <div class="form-group">
-            <label>Loại phòng</label>
-            <input class="form-control" name="room_type" required>
-        </div>
+            <div class="form-group">
+                <label>Loại phòng</label>
+                <input type="text" name="room_type" required>
+            </div>
 
-        <div class="form-group">
-            <label>Giá</label>
-            <input class="form-control" type="number" name="price" required>
-        </div>
+            <div class="form-group">
+                <label>Giá</label>
+                <input type="number" name="price" required>
+            </div>
 
-        <button class="btn btn-primary">Lưu</button>
-        <a href="index.php?page=rooms" class="btn">Quay lại</a>
-    </form>
+            <div class="form-actions">
+                <button class="btn btn-primary">Lưu</button>
+                <a href="index.php?page=rooms" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
 </div>
