@@ -25,13 +25,12 @@ if ($booking_id <= 0) {
 
 /*
 |--------------------------------------------------------------------------
-| 3. XỬ LÝ CHECK OUT (POST)
+| 3. XỬ LÝ CHECK OUT (KHÔNG XÓA BOOKING)
 |--------------------------------------------------------------------------
 */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $room_id = (int)($_POST['room_id'] ?? 0);
-
     if ($room_id <= 0) {
         die("Thiếu dữ liệu check out");
     }
@@ -39,12 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        $stmt = $conn->prepare("DELETE FROM bookings WHERE id = ?");
+        // 1. Cập nhật ngày check_out (KHÔNG XÓA booking)
+        $stmt = $conn->prepare("
+            UPDATE bookings
+            SET check_out = CURDATE()
+            WHERE id = ?
+        ");
         $stmt->bind_param("i", $booking_id);
         $stmt->execute();
 
+        // 2. Trả phòng
         $stmt = $conn->prepare("
-            UPDATE rooms 
+            UPDATE rooms
             SET status = 'available'
             WHERE id = ?
         ");
@@ -83,7 +88,7 @@ $stmt = $conn->prepare("
         b.check_in,
         COALESCE(b.check_out, CURDATE()) AS check_out,
         GREATEST(DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in), 1) AS days,
-        b.total_price
+        GREATEST(DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in), 1) * r.price AS total_price
     FROM bookings b
     JOIN customers c ON b.customer_id = c.id
     JOIN rooms r ON b.room_id = r.id
@@ -113,8 +118,6 @@ $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . url
         <p><strong>Khách hàng:</strong> <?= htmlspecialchars($data['name']) ?></p>
         <p><strong>SĐT:</strong> <?= htmlspecialchars($data['phone']) ?></p>
         <p><strong>CCCD:</strong> <?= htmlspecialchars($data['id_card']) ?></p>
-
-       
 
         <p><strong>Phòng:</strong> <?= $data['room_number'] ?> – <?= $data['room_type'] ?></p>
         <p><strong>Ngày nhận:</strong> <?= $data['check_in'] ?></p>
