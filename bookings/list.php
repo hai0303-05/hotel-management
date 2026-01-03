@@ -19,19 +19,18 @@ if (!isset($_GET['booking_id'])) {
 */
 $booking_id = (int)$_GET['booking_id'];
 if ($booking_id <= 0) {
-    echo "<h3>Booking không hợp lệ</h3>";
+    echo "<p class='empty-text'>Booking không hợp lệ</p>";
     return;
 }
 
 /*
 |--------------------------------------------------------------------------
-| 3. XỬ LÝ CHECK OUT (POST)
+| 3. XỬ LÝ CHECK OUT (KHÔNG XÓA BOOKING)
 |--------------------------------------------------------------------------
 */
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $room_id = (int)($_POST['room_id'] ?? 0);
-
     if ($room_id <= 0) {
         die("Thiếu dữ liệu check out");
     }
@@ -39,14 +38,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $conn->begin_transaction();
 
     try {
-        // Xóa booking
-        $stmt = $conn->prepare("DELETE FROM bookings WHERE id = ?");
+        // 1. Cập nhật ngày check_out (KHÔNG XÓA booking)
+        $stmt = $conn->prepare("
+            UPDATE bookings
+            SET check_out = CURDATE()
+            WHERE id = ?
+        ");
         $stmt->bind_param("i", $booking_id);
         $stmt->execute();
 
-        // Trả phòng
+        // 2. Trả phòng
         $stmt = $conn->prepare("
-            UPDATE rooms 
+            UPDATE rooms
             SET status = 'available'
             WHERE id = ?
         ");
@@ -58,7 +61,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         echo "<script>
             alert('Trả phòng thành công');
             window.location.href = 'index.php?page=bookings_checkout';
-
         </script>";
         exit;
 
@@ -86,7 +88,7 @@ $stmt = $conn->prepare("
         b.check_in,
         COALESCE(b.check_out, CURDATE()) AS check_out,
         GREATEST(DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in), 1) AS days,
-        b.total_price
+        GREATEST(DATEDIFF(COALESCE(b.check_out, CURDATE()), b.check_in), 1) * r.price AS total_price
     FROM bookings b
     JOIN customers c ON b.customer_id = c.id
     JOIN rooms r ON b.room_id = r.id
@@ -97,7 +99,7 @@ $stmt->execute();
 $data = $stmt->get_result()->fetch_assoc();
 
 if (!$data) {
-    echo "<h3>Không tìm thấy hóa đơn</h3>";
+    echo "<p class='empty-text'>Không tìm thấy hóa đơn</p>";
     return;
 }
 
@@ -106,35 +108,42 @@ $qr_content = "Thanh toan phong {$data['room_number']} - {$data['total_price']} 
 $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qr_content);
 ?>
 
-<h2>HÓA ĐƠN THANH TOÁN</h2>
-<hr>
+<!-- ================= GIAO DIỆN ================= -->
+<div class="booking-wrapper">
 
-<p><strong>Khách hàng:</strong> <?= htmlspecialchars($data['name']) ?></p>
-<p><strong>SĐT:</strong> <?= htmlspecialchars($data['phone']) ?></p>
-<p><strong>CCCD:</strong> <?= htmlspecialchars($data['id_card']) ?></p>
+    <h1 class="booking-title">HÓA ĐƠN THANH TOÁN</h1>
 
-<hr>
+    <div class="invoice-box">
 
-<p><strong>Phòng:</strong> <?= $data['room_number'] ?> - <?= $data['room_type'] ?></p>
-<p><strong>Ngày nhận:</strong> <?= $data['check_in'] ?></p>
-<p><strong>Ngày trả:</strong> <?= $data['check_out'] ?></p>
-<p><strong>Số ngày:</strong> <?= $data['days'] ?></p>
+        <p><strong>Khách hàng:</strong> <?= htmlspecialchars($data['name']) ?></p>
+        <p><strong>SĐT:</strong> <?= htmlspecialchars($data['phone']) ?></p>
+        <p><strong>CCCD:</strong> <?= htmlspecialchars($data['id_card']) ?></p>
 
-<hr>
+        <p><strong>Phòng:</strong> <?= $data['room_number'] ?> – <?= $data['room_type'] ?></p>
+        <p><strong>Ngày nhận:</strong> <?= $data['check_in'] ?></p>
+        <p><strong>Ngày trả:</strong> <?= $data['check_out'] ?></p>
+        <p><strong>Số ngày:</strong> <?= $data['days'] ?></p>
 
-<h3>TỔNG TIỀN: <?= number_format($data['total_price']) ?> VND</h3>
+        <h3 class="total-price">
+            Tổng tiền: <?= number_format($data['total_price']) ?> VND
+        </h3>
 
-<hr>
+        <div class="qr-box">
+            <p><strong>Quét mã QR để thanh toán</strong></p>
+            <img src="<?= $qr_url ?>" alt="QR thanh toán">
+        </div>
 
-<h4>Quét mã QR để thanh toán</h4>
-<img src="<?= $qr_url ?>" alt="QR thanh toán">
+        <form method="post">
+            <input type="hidden" name="room_id" value="<?= $data['room_id'] ?>">
+            <button type="submit" class="booking-btn danger">
+                XÁC NHẬN THANH TOÁN & CHECK OUT
+            </button>
+        </form>
 
-<hr>
+        <button onclick="window.print()" class="booking-btn secondary">
+            In hóa đơn
+        </button>
 
-<form method="post">
-    <input type="hidden" name="room_id" value="<?= $data['room_id'] ?>">
-    <button type="submit">XÁC NHẬN THANH TOÁN & CHECK OUT</button>
-</form>
+    </div>
 
-<br>
-<button onclick="window.print()">In hóa đơn</button>
+</div>

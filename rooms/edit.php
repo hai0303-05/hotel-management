@@ -2,8 +2,13 @@
 if (!defined('IN_INDEX')) die('Access denied');
 require_once "config/db.php";
 
-$id = $_GET['id'] ?? 0;
+$id = (int)($_GET['id'] ?? 0);
 $room = $conn->query("SELECT * FROM rooms WHERE id = $id")->fetch_assoc();
+
+if (!$room) {
+    header("Location: index.php?page=rooms");
+    exit;
+}
 
 $error = "";
 
@@ -17,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = "Vui lòng nhập đầy đủ thông tin.";
     } else {
         $check = $conn->query(
-            "SELECT id FROM rooms 
+            "SELECT id FROM rooms
              WHERE room_number = '$room_number' AND id != $id"
         );
 
@@ -40,32 +45,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 
 <div class="container">
-    <h2 class="page-title">Sửa phòng</h2>
+    <div class="room-form">
+        <h2>Sửa phòng</h2>
 
-    <?php if ($error): ?>
-        <p style="color:red"><?= $error ?></p>
-    <?php endif; ?>
+        <?php if ($error): ?>
+            <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
 
-    <form method="post">
-        <div class="form-group">
-            <label>Số phòng</label>
-            <input class="form-control" name="room_number"
-                   value="<?= $room['room_number'] ?>" required>
-        </div>
+        <form method="post">
+            <div class="form-group">
+                <label>Số phòng</label>
+                <input type="text" name="room_number"
+                       value="<?= $room['room_number'] ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label>Loại phòng</label>
-            <input class="form-control" name="room_type"
-                   value="<?= $room['room_type'] ?>" required>
-        </div>
+            <div class="form-group">
+                <label>Loại phòng</label>
+                <input type="text" name="room_type"
+                       value="<?= $room['room_type'] ?>" required>
+            </div>
 
-        <div class="form-group">
-            <label>Giá</label>
-            <input class="form-control" type="number" name="price"
-                   value="<?= $room['price'] ?>" required>
-        </div>
+            <div class="form-group">
+                <label>Giá</label>
+                <input type="number" name="price"
+                       value="<?= $room['price'] ?>" required>
+            </div>
 
-        <button class="btn btn-primary">Cập nhật</button>
-        <a href="index.php?page=rooms" class="btn">Quay lại</a>
-    </form>
+            <div class="form-actions">
+                <button class="btn btn-primary">Cập nhật</button>
+                <a href="index.php?page=rooms" class="btn btn-secondary">Quay lại</a>
+            </div>
+        </form>
+    </div>
 </div>
