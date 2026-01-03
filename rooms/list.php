@@ -29,7 +29,7 @@ if ($price_to !== '') {
 
 $result = $conn->query($sql);
 ?>
-
+ 
 <div class="rooms-container">
     <h2 class="page-title">Quản lý phòng</h2>
 

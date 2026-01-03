@@ -24,7 +24,7 @@ if ($check && $check->num_rows > 0) {
     header("Location: index.php?page=rooms");
     exit;
 }
-
+  
 /* 3️⃣ DELETE */
 $conn->query("DELETE FROM rooms WHERE id = $id");
 
