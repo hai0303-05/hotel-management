@@ -1,192 +1,219 @@
-/* ==============================
-   CUSTOMERS MODULE – PREMIUM STYLE
-   ============================== */
-
 .customers-page {
-    background: #ffffff;
-    padding: 24px;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+    font-family: "Inter", "Segoe UI", Arial, sans-serif;
+    background: #f6f8fb;
+    padding: 28px;
+    border-radius: 16px;
 }
 
-/* ===== TITLE ===== */
+/* ===== Title ===== */
 .customers-page h2 {
     font-size: 22px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #2c3e50;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 22px;
 }
 
-/* ===== SEARCH ===== */
+/* ===== Search area ===== */
 .customers-page form {
     display: flex;
-    gap: 12px;
-    background: #f4f6f8;
-    padding: 14px;
-    border-radius: 10px;
-    margin-bottom: 18px;
     align-items: center;
-    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
 }
 
 .customers-page input[type="text"] {
-    width: 260px;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 8px;
-    border: 1px solid #dcdfe6;
+    width: 340px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    border: 2px solid #d1d5db;
     font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    background: #fff;
+    outline: none;
+}
+
+.customers-page input::placeholder {
+    color: #9ca3af;
 }
 
 .customers-page input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52,152,219,0.18);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.15);
 }
 
+/* ===== Search button ===== */
 .customers-page button {
-    height: 38px;
-    padding: 0 16px;
-    border-radius: 8px;
-    border: none;
-    background: #3498db;
+    padding: 11px 18px;
+    border-radius: 10px;
+    border: 2px solid #2563eb;
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
     color: #fff;
     font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
 }
 
 .customers-page button:hover {
-    background: #2980b9;
+    opacity: .92;
 }
 
-/* ===== ADD BUTTON ===== */
+/* ===== Add customer button ===== */
 .customers-page a[href*="customers_add"] {
     display: inline-block;
-    margin-bottom: 16px;
-    padding: 10px 18px;
-    background: #3498db;
+    margin: 10px 0 22px;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
     color: #fff;
-    border-radius: 8px;
-    text-decoration: none;
+    border-radius: 12px;
     font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 6px 18px rgba(34,197,94,.3);
 }
 
 .customers-page a[href*="customers_add"]:hover {
-    background: #2980b9;
+    opacity: .9;
 }
 
-/* ===== TABLE ===== */
+/* ===== TABLE – VIỀN ĐẬM ĐỀU + GIÃN ĐỀU ===== */
 .customers-page table {
     width: 100%;
+    table-layout: fixed;
+    background: #fff;
+    border-radius: 16px;
     border-collapse: separate;
     border-spacing: 0;
-    background: #fff;
-    border-radius: 12px;
     overflow: hidden;
+    border: 2px solid #1f2937;
+    box-shadow: 0 14px 36px rgba(0,0,0,.1);
 }
 
+/* ===== Header ===== */
 .customers-page th {
-    background: #f0f2f5;
-    padding: 14px;
-    font-weight: 600;
-    color: #2c3e50;
+    background: #f9fafb;
+    padding: 14px 16px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    font-weight: 700;
+    color: #111827;
     text-align: center;
+    border-right: 2px solid #1f2937;
+    border-bottom: 2px solid #1f2937;
 }
 
+/* ===== Body ===== */
 .customers-page td {
-    padding: 14px;
-    text-align: center;
-    border-top: 1px solid #eee;
+    padding: 14px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    vertical-align: middle;
+    border-right: 2px solid #1f2937;
+    border-bottom: 2px solid #1f2937;
 }
 
+/* Bỏ viền phải cột cuối */
+.customers-page th:last-child,
+.customers-page td:last-child {
+    border-right: none;
+}
+
+/* Bỏ viền dưới hàng cuối */
+.customers-page tr:last-child td {
+    border-bottom: none;
+}
+
+/* Hover hàng */
 .customers-page tr:hover {
-    background: #fafafa;
+    background: #f3f4f6;
 }
 
-/* ==============================
-   STATUS – GIỐNG ROOMS
-   ============================== */
+/* ===== Giãn cột đều ===== */
+.customers-page th:nth-child(1),
+.customers-page td:nth-child(1) {
+    width: 60px;
+    text-align: center;
+}
 
+.customers-page th:nth-child(2),
+.customers-page td:nth-child(2) {
+    width: 220px;
+    font-weight: 600;
+}
+
+.customers-page th:nth-child(3),
+.customers-page td:nth-child(3) {
+    width: 180px;
+}
+
+.customers-page th:nth-child(4),
+.customers-page td:nth-child(4) {
+    width: 180px;
+}
+
+.customers-page th:nth-child(5),
+.customers-page td:nth-child(5) {
+    width: 140px;
+}
+
+.customers-page th:nth-child(6),
+.customers-page td:nth-child(6) {
+    width: 180px;
+    text-align: center;
+}
+
+.customers-page th:nth-child(7),
+.customers-page td:nth-child(7) {
+    width: 220px;
+}
+
+/* ===== STATUS ===== */
 .customers-page .status {
     display: inline-block;
-    padding: 5px 12px;
-    border-radius: 20px;
+    padding: 6px 14px;
+    border-radius: 999px;
     font-size: 13px;
     font-weight: 600;
+    background: #dcfce7;
+    color: #15803d;
+    border: 1.5px solid #86efac;
 }
 
-/* Đang ở */
-.customers-page .status-green {
-    background: #e6f9ee;
-    color: #27ae60;
+/* ===== ACTION BUTTONS ===== */
+.customers-page .action {
+    white-space: nowrap;
 }
-
-/* Đặt trước */
-.customers-page .status-yellow {
-    background: #fff6e5;
-    color: #f39c12;
-}
-
-/* Đã từng ở */
-.customers-page .status-gray {
-    background: #f0f0f0;
-    color: #7f8c8d;
-}
-
-/* ==============================
-   BUTTON SYSTEM – GIỐNG ROOMS
-   ============================== */
 
 .customers-page .action a {
-    min-width: 56px;
-    height: 36px;
-    padding: 0 16px;
+    display: inline-block;
+    padding: 6px 14px;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 13px;
+    font-weight: 600;
     text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 4px;
+    margin-right: 6px;
+    color: #fff;
 }
 
 .customers-page .action .edit {
-    background: #3498db;
-    color: #fff;
-}
-
-.customers-page .action .edit:hover {
-    background: #2980b9;
+    background: #3b82f6;
 }
 
 .customers-page .action .delete {
-    background: #e74c3c;
-    color: #fff;
+    background: #ef4444;
 }
 
-.customers-page .action .delete:hover {
-    background: #c0392b;
+.customers-page .action a:hover {
+    opacity: 0.9;
 }
 
-/* KHÓA XÓA */
-.customers-page .action span {
-    min-width: 56px;
-    height: 36px;
-    padding: 0 16px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: #e0e0e0;
-    color: #888;
-    border-radius: 8px;
-    font-size: 14px;
-    cursor: not-allowed;
-}
-
-/* ===== EMPTY ===== */
+/* ===== Empty state ===== */
 .customers-page td[colspan] {
-    padding: 18px;
+    padding: 28px;
     text-align: center;
-    color: #c0392b;
+    font-size: 14px;
     font-weight: 500;
+    color: #6b7280;
 }

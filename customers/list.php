@@ -9,7 +9,7 @@ $delete_error = '';
 /* ===== XOA KHACH HANG ===== */
 if (
     isset($_GET['action']) &&
-    $_GET['action'] === 'delete' && 
+    $_GET['action'] === 'delete' &&
     isset($_GET['id'])
 ) {
     $id = (int)$_GET['id'];
@@ -30,7 +30,7 @@ if (
     }
 }
 
-/* ===== SQL DANH SACH KHACH + TRANG THAI ===== */
+/* ===== SQL ===== */
 $sql = "
 SELECT 
     c.id,
@@ -46,41 +46,21 @@ SELECT
     ) AS booking_count,
 
     (
-     CASE
-    -- Dang o: chi can chua tra phong
-    WHEN EXISTS (
-        SELECT 1
-        FROM bookings b
-        WHERE b.customer_id = c.id
-          AND b.check_out IS NULL
-    ) THEN 'Đang ở'
-
-    -- Da tung o: co booking cu nhung KHONG con dang o
-    WHEN EXISTS (
-        SELECT 1
-        FROM bookings b1
-        WHERE b1.customer_id = c.id
-          AND b1.check_out IS NOT NULL
-    )
-    AND NOT EXISTS (
-        SELECT 1
-        FROM bookings b2
-        WHERE b2.customer_id = c.id
-          AND b2.check_out IS NULL
-    ) THEN 'Đang ở'
-
-    -- Con lai
-    ELSE 'Đã từng ở'
-END
-
+        CASE
+            WHEN EXISTS (
+                SELECT 1
+                FROM bookings b
+                WHERE b.customer_id = c.id
+                  AND b.check_out IS NULL
+            ) THEN 'Đang ở'
+            ELSE 'Đã từng ở'
+        END
     ) AS trang_thai
 
 FROM customers c
 WHERE 1
 ";
 
-
-/* ===== TIM KIEM ===== */
 if ($keyword !== '') {
     $keyword = $conn->real_escape_string($keyword);
     $sql .= "
@@ -94,11 +74,9 @@ if ($keyword !== '') {
 }
 
 $sql .= " ORDER BY c.id DESC";
-
 $result = $conn->query($sql);
 ?>
 
-<!-- ===== GIAO DIEN ===== -->
 <div class="customers-page">
 
 <h2>Danh sách khách hàng</h2>
@@ -120,13 +98,11 @@ $result = $conn->query($sql);
     <button type="submit">Tìm</button>
 </form>
 
-<br>
-
 <a href="index.php?page=customers_add">+ Thêm khách hàng</a>
 
 <br><br>
 
-<table border="1" cellpadding="5" cellspacing="0" width="100%">
+<table width="100%">
     <tr>
         <th>STT</th>
         <th>Tên</th>
@@ -149,21 +125,42 @@ if ($result && $result->num_rows > 0):
     <td><?php echo $row['email']; ?></td>
     <td><?php echo $row['id_card']; ?></td>
 
-    <td><?php echo $row['trang_thai']; ?></td>
-
+    <!-- TRANG THAI -->
     <td>
-        <a href="index.php?page=customers_edit&id=<?php echo $row['id']; ?>">Sửa</a>
-        |
+        <?php
+        $statusClass = 'status-old';
+        if ($row['trang_thai'] === 'Đang ở') {
+            $statusClass = 'status-stay';
+        }
+        ?>
+        <span class="status <?php echo $statusClass; ?>">
+            <?php echo $row['trang_thai']; ?>
+        </span>
+    </td>
+
+    <!-- HANH DONG -->
+    <td class="action">
+        <a
+            href="index.php?page=customers_edit&id=<?php echo $row['id']; ?>"
+            class="edit"
+        >
+            Sửa
+        </a>
+
         <?php if ($row['booking_count'] > 0): ?>
             <span>Không thể xóa</span>
         <?php else: ?>
             <a
                 href="index.php?page=customers&action=delete&id=<?php echo $row['id']; ?>"
+                class="delete"
                 onclick="return confirm('Bạn có chắc muốn xóa khách hàng này?')"
-            >Xóa</a>
+            >
+                Xóa
+            </a>
         <?php endif; ?>
     </td>
 </tr>
+
 <?php
     endwhile;
 else:
