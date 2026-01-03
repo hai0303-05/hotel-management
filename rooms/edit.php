@@ -44,12 +44,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<div class="container">
+<div class="rooms-container">
     <div class="room-form">
         <h2>Sửa phòng</h2>
 
         <?php if ($error): ?>
-            <div class="alert alert-danger"><?= $error ?></div>
+            <div class="rooms-empty"><?= $error ?></div>
         <?php endif; ?>
 
         <form method="post">
@@ -72,9 +72,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="form-actions">
-                <button class="btn btn-primary">Cập nhật</button>
-                <a href="index.php?page=rooms" class="btn btn-secondary">Quay lại</a>
+                <button class="rooms-btn rooms-btn-primary">Cập nhật</button>
+                <a href="index.php?page=rooms"
+                   class="rooms-btn rooms-btn-secondary">Quay lại</a>
             </div>
         </form>
     </div>
 </div>
+
+

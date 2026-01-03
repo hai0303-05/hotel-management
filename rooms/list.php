@@ -20,11 +20,9 @@ WHERE 1
 if ($status !== '') {
     $sql .= " AND r.status = '$status'";
 }
-
 if ($price_from !== '') {
     $sql .= " AND r.price >= $price_from";
 }
-
 if ($price_to !== '') {
     $sql .= " AND r.price <= $price_to";
 }
@@ -32,17 +30,17 @@ if ($price_to !== '') {
 $result = $conn->query($sql);
 ?>
 
-<div class="container">
+<div class="rooms-container">
     <h2 class="page-title">Quản lý phòng</h2>
 
     <?php if (!empty($_SESSION['error'])): ?>
-        <div class="alert alert-danger">
+        <div class="rooms-alert">
             <?= $_SESSION['error'] ?>
         </div>
         <?php unset($_SESSION['error']); ?>
     <?php endif; ?>
 
-    <!-- ===== FILTER + SEARCH ===== -->
+    <!-- FILTER + SEARCH -->
     <form method="get" class="rooms-filter">
         <input type="hidden" name="page" value="rooms">
 
@@ -55,7 +53,6 @@ $result = $conn->query($sql);
         <input type="number" name="price_from" class="form-control" placeholder="Giá từ" value="<?= $price_from ?>">
         <input type="number" name="price_to" class="form-control" placeholder="Giá đến" value="<?= $price_to ?>">
 
-        <!-- 🔍 SEARCH -->
         <div class="search-box">
             <span class="search-icon">🔍</span>
             <input type="text"
@@ -67,13 +64,13 @@ $result = $conn->query($sql);
         <button class="btn btn-primary">Lọc</button>
     </form>
 
-    <!-- ===== ACTION ===== -->
+    <!-- ACTION -->
     <div class="rooms-actions">
         <a href="index.php?page=rooms_add" class="btn btn-primary">Thêm phòng</a>
     </div>
 
-    <!-- ===== TABLE ===== -->
-    <table class="table rooms-table">
+    <!-- TABLE -->
+    <table class="rooms-table">
         <thead>
         <tr>
             <th>Số phòng</th>
@@ -107,18 +104,14 @@ $result = $conn->query($sql);
                     </td>
                     <td>
                         <a class="btn btn-primary"
-                           href="index.php?page=rooms_edit&id=<?= $row['id'] ?>">
-                            Sửa
-                        </a>
+                           href="index.php?page=rooms_edit&id=<?= $row['id'] ?>">Sửa</a>
 
                         <?php if ($row['status'] === 'available'): ?>
                             <a class="btn btn-danger"
                                href="index.php?page=rooms_delete&id=<?= $row['id'] ?>"
-                               onclick="return confirm('Xóa phòng này?')">
-                                Xóa
-                            </a>
+                               onclick="return confirm('Xóa phòng này?')">Xóa</a>
                         <?php else: ?>
-                            <span class="btn btn-lock" title="Phòng đang có khách">🔒</span>
+                            <span class="btn-lock" title="Phòng đang có khách">🔒</span>
                         <?php endif; ?>
                     </td>
                 </tr>
@@ -132,27 +125,13 @@ $result = $conn->query($sql);
     </table>
 </div>
 
-<!-- 🔍 REALTIME SEARCH + HIGHLIGHT -->
+<!-- REALTIME SEARCH -->
 <script>
 document.getElementById('roomSearch').addEventListener('keyup', function () {
     const keyword = this.value.toLowerCase();
-    const rows = document.querySelectorAll('.rooms-table tbody tr');
-
-    rows.forEach(row => {
-        let text = row.innerText.toLowerCase();
+    document.querySelectorAll('.rooms-table tbody tr').forEach(row => {
+        const text = row.innerText.toLowerCase();
         row.style.display = text.includes(keyword) ? '' : 'none';
-
-        row.querySelectorAll('td').forEach(td => {
-            const original = td.dataset.text || td.innerText;
-            td.dataset.text = original;
-
-            if (keyword) {
-                const regex = new RegExp(`(${keyword})`, 'gi');
-                td.innerHTML = original.replace(regex, '<span class="highlight">$1</span>');
-            } else {
-                td.innerHTML = original;
-            }
-        });
     });
 });
 </script>

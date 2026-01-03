@@ -2,7 +2,7 @@
    ROOMS MODULE – PREMIUM STYLE
    ============================== */
 
-.container {
+.rooms-container {
     background: #ffffff;
     padding: 24px;
     border-radius: 12px;
@@ -10,7 +10,7 @@
 }
 
 /* ===== TITLE ===== */
-.page-title {
+.rooms-container .page-title {
     font-size: 22px;
     font-weight: 600;
     margin-bottom: 20px;
@@ -18,7 +18,7 @@
 }
 
 /* ===== FILTER ===== */
-.rooms-filter {
+.rooms-container .rooms-filter {
     display: flex;
     gap: 12px;
     background: #f4f6f8;
@@ -29,18 +29,18 @@
     flex-wrap: wrap;
 }
 
-.rooms-filter .form-control {
+.rooms-container .rooms-filter .form-control {
     width: 160px;
     height: 38px;
 }
 
 /* ===== ACTION ===== */
-.rooms-actions {
+.rooms-container .rooms-actions {
     margin-bottom: 16px;
 }
 
 /* ===== TABLE ===== */
-.table {
+.rooms-container .rooms-table {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -49,7 +49,7 @@
     overflow: hidden;
 }
 
-.table th {
+.rooms-container .rooms-table th {
     background: #f0f2f5;
     padding: 14px;
     font-weight: 600;
@@ -57,18 +57,18 @@
     text-align: center;
 }
 
-.table td {
+.rooms-container .rooms-table td {
     padding: 14px;
     text-align: center;
     border-top: 1px solid #eee;
 }
 
-.table tr:hover {
+.rooms-container .rooms-table tr:hover {
     background: #fafafa;
 }
 
 /* ===== STATUS ===== */
-.room-status-available {
+.rooms-container .room-status-available {
     background: #e6f9ee;
     color: #27ae60;
     padding: 5px 12px;
@@ -77,7 +77,7 @@
     font-weight: 600;
 }
 
-.room-status-booked {
+.rooms-container .room-status-booked {
     background: #fdecea;
     color: #c0392b;
     padding: 5px 12px;
@@ -87,7 +87,7 @@
 }
 
 /* ===== WARNING ===== */
-.room-warning {
+.rooms-container .room-warning {
     margin-left: 6px;
     background: #f1c40f;
     color: #000;
@@ -96,66 +96,76 @@
     border-radius: 4px;
 }
 
-/* ===== BUTTON ===== */
-.btn {
-    padding: 7px 16px;
+/* ==============================
+   BUTTON SYSTEM (LIST)
+   ============================== */
+
+.rooms-container .btn {
+    min-width: 56px;
+    height: 36px;
+    padding: 0 16px;
     border-radius: 8px;
     font-size: 14px;
     text-decoration: none;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.2s ease;
+    border: none;
+    cursor: pointer;
 }
 
-.btn-primary {
+.rooms-container .btn-primary {
     background: #3498db;
     color: #fff;
 }
 
-.btn-primary:hover {
+.rooms-container .btn-primary:hover {
     background: #2980b9;
 }
 
-.btn-danger {
+.rooms-container .btn-danger {
     background: #e74c3c;
     color: #fff;
 }
 
-.btn-danger:hover {
+.rooms-container .btn-danger:hover {
     background: #c0392b;
 }
 
-/* ===== LOCK BUTTON ===== */
-.btn-lock {
+/* 🔒 LOCK – BẰNG KÍCH THƯỚC BTN */
+.rooms-container .btn-lock {
+    min-width: 56px;
+    height: 36px;
+    padding: 0 16px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 42px;
-    height: 36px;
     background: #e0e0e0;
     color: #888;
     border-radius: 8px;
     cursor: not-allowed;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 /* ===== EMPTY ===== */
-.rooms-empty {
+.rooms-container .rooms-empty {
     text-align: center;
-    padding: 30px;
-    color: #777;
-    font-style: italic;
+    padding: 16px;
+    color: #c0392b;
+    font-weight: 500;
 }
 
 /* ===== SEARCH ===== */
-.search-box {
+.rooms-container .search-box {
     position: relative;
 }
 
-.search-box input {
+.rooms-container .search-box input {
     padding-left: 36px;
 }
 
-.search-icon {
+.rooms-container .search-icon {
     position: absolute;
     left: 12px;
     top: 50%;
@@ -164,73 +174,79 @@
 }
 
 /* ===== HIGHLIGHT ===== */
-.highlight {
+.rooms-container .highlight {
     background: #ffeaa7;
     padding: 2px 4px;
     border-radius: 4px;
 }
 
 /* ==============================
-   ROOM FORM (ADD / EDIT) – NÂNG CẤP
+   ROOM FORM (ADD / EDIT)
    ============================== */
 
-.room-form {
-    max-width: 520px;
-    margin: 30px auto;
+.rooms-container > .room-form {
+    max-width: 580px;
+    margin: 40px auto;
     background: #ffffff;
-    padding: 30px;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    padding: 40px;
+    border-radius: 18px;
+    box-shadow: 0 14px 36px rgba(0,0,0,0.15);
 }
 
-.room-form h2 {
-    margin-bottom: 22px;
-    font-size: 22px;
+.rooms-container > .room-form > h2 {
+    margin-bottom: 28px;
+    font-size: 24px;
     font-weight: 600;
     color: #2c3e50;
     text-align: center;
 }
 
-.room-form .form-group {
-    margin-bottom: 18px;
+.rooms-container > .room-form .form-group {
+    margin-bottom: 22px;
 }
 
-.room-form label {
+.rooms-container > .room-form label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     font-weight: 600;
     font-size: 14px;
     color: #34495e;
 }
 
-.room-form input {
+.rooms-container > .room-form input {
     width: 100%;
-    height: 44px;
-    padding: 0 14px;
-    border-radius: 8px;
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
     border: 1px solid #dcdfe3;
     font-size: 15px;
-    transition: all 0.2s ease;
+    background: #fff;
 }
 
-.room-form input:focus {
+.rooms-container > .room-form input:focus {
     outline: none;
     border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52,152,219,0.15);
+    box-shadow: 0 0 0 4px rgba(52,152,219,0.18);
 }
 
-/* ACTIONS */
-.room-form .form-actions {
-    margin-top: 26px;
+.rooms-container > .room-form .form-actions {
+    margin-top: 32px;
     display: flex;
     justify-content: space-between;
 }
 
-.room-form .btn-secondary {
-    background: #ecf0f1;
-    color: #2c3e50;
+.rooms-container > .room-form .rooms-btn {
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 14px;
 }
 
-.room-form .btn-secondary:hover {
-    background: #dfe6e9;
+.rooms-container > .room-form .rooms-btn-primary {
+    background: #3498db;
+    color: #fff;
+}
+
+.rooms-container > .room-form .rooms-btn-secondary {
+    background: #ecf0f1;
+    color: #2c3e50;
 }

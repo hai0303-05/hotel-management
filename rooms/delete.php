@@ -2,30 +2,32 @@
 if (!defined('IN_INDEX')) die('Access denied');
 require_once "config/db.php";
 
-$id = (int)($_GET['id'] ?? 0);
+/* 1️⃣ ÉP KIỂU ID */
+$id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+
 if ($id <= 0) {
+    $_SESSION['error'] = 'ID phòng không hợp lệ';
     header("Location: index.php?page=rooms");
     exit;
 }
 
-/* Check phòng đang có khách hay không */
+/* 2️⃣ CHECK BẢNG BOOKINGS (KHÔNG CHECK STATUS) */
 $check = $conn->query("
     SELECT 1
     FROM bookings
     WHERE room_id = $id
-      AND check_out IS NULL
     LIMIT 1
 ");
 
 if ($check && $check->num_rows > 0) {
-    $_SESSION['error'] = 'Phòng đang có khách, không thể xóa';
+    $_SESSION['error'] = 'Phòng đã có lịch sử đặt, không thể xóa';
     header("Location: index.php?page=rooms");
     exit;
 }
 
-/* XÓA PHÒNG */
+/* 3️⃣ DELETE */
 $conn->query("DELETE FROM rooms WHERE id = $id");
 
-/* Quay lại danh sách */
+/* 4️⃣ REDIRECT + EXIT (BẮT BUỘC) */
 header("Location: index.php?page=rooms");
 exit;
