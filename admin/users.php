@@ -182,8 +182,7 @@ $result = mysqli_query($conn, "SELECT * FROM users");
                        onclick="return confirm('Xóa tài khỏan này?')">
                         Xóa
                     </a>
-                <?php } else { ?>
-                    <i>(Tài khoản hiện tại )</i>
+
                 <?php } ?>
             </td>
         </form>
