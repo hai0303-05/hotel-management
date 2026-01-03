@@ -26,7 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
+ 
 <div class="rooms-container">
     <div class="room-form">
         <h2>Thêm phòng</h2>
