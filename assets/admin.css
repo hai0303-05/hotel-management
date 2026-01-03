@@ -170,16 +170,16 @@
 
 
 
-/* Tiêu đề trang */
+/* ===== TIÊU ĐỀ TRANG ===== */
 .page-title {
     font-size: 26px;
     font-weight: 600;
     margin-bottom: 40px;
-     text-align: center;
+    text-align: center;
     color: #1f2937;
 }
 
-/* Đoạn chào admin */
+/* ===== CHÀO ADMIN ===== */
 .container > p {
     margin-bottom: 30px;
     text-align: center;
@@ -197,39 +197,39 @@
 
 .container form {
     background: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
     max-width: 420px;
-    margin: 0 auto 30px auto;
+    margin: 0 auto 40px auto;
 }
 
+/* ===== FORM CONTROL ===== */
 .form-group {
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .form-control {
     width: 100%;
-    height: 38px;
-    padding: 8px 10px;
+    height: 40px;
+    padding: 8px 12px;
     border: 1px solid #d1d5db;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 14px;
 }
 
 .form-control:focus {
     outline: none;
-    border-color: #3b82f6;
+    border-color: #2563eb;
 }
 
 /* ===== BUTTON ===== */
 .btn {
     display: inline-block;
-    padding: 8px 14px;
-    border-radius: 6px;
+    padding: 8px 16px;
+    border-radius: 8px;
     font-size: 14px;
     cursor: pointer;
-    text-decoration: none;
     border: none;
 }
 
@@ -255,56 +255,84 @@
 .error {
     background: #fee2e2;
     color: #991b1b;
-    padding: 10px;
-    border-radius: 6px;
-    margin-bottom: 15px;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
     text-align: center;
 }
 
 /* ===== TABLE USERS ===== */
 .table {
     width: 100%;
-    border-collapse: collapse;
     background: #ffffff;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.06);
-    border-radius: 10px;
+    border-radius: 12px;
     overflow: hidden;
+    border-collapse: separate;
+    border-spacing: 0;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.06);
+    border: 2px solid #d1d5db;
 }
 
+/* Header */
 .table th {
     background: #f3f4f6;
-    padding: 12px;
+    padding: 14px;
     font-size: 14px;
     font-weight: 600;
     text-align: center;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 2px solid #e5e7eb;
+    border-right: 2px solid #e5e7eb;
 }
 
+/* Body */
 .table td {
-    padding: 10px;
+    padding: 14px;
     text-align: center;
     border-bottom: 1px solid #e5e7eb;
+    border-right: 1px solid #e5e7eb;
+    vertical-align: middle;
 }
 
-.table tr:hover {
+/* Bỏ viền phải cột cuối */
+.table th:last-child,
+.table td:last-child {
+    border-right: none;
+}
+
+/* Hover */
+.table tr:hover td {
     background: #f9fafb;
 }
 
-/* Input trong bảng */
+/* ===== INPUT TRONG BẢNG ===== */
 .table .form-control {
-    height: 34px;
-    font-size: 13px;
+    width: 95%;
+    margin: 0 auto;
+    height: 36px;
+    font-size: 14px;
+    border-radius: 8px;
 }
 
-/* Hành động */
+/* Input disabled (tài khoản hiện tại) */
+.table input[disabled] {
+    background: #f3f4f6;
+    color: #374151;
+    cursor: not-allowed;
+}
+
+/* ===== ACTION ===== */
+.table td:last-child {
+    white-space: nowrap;
+}
+
 .table td .btn {
     margin-right: 6px;
 }
 
-/* Link về trang chủ */
+/* ===== LINK TRANG CHỦ ===== */
 .container > a {
     display: inline-block;
-    margin-top: 20px;
+    margin-top: 25px;
     color: #2563eb;
     text-decoration: none;
     font-weight: 500;
@@ -313,3 +341,13 @@
 .container > a:hover {
     text-decoration: underline;
 }
+/* Bỏ đường kẻ ngang (hr) nếu có */
+hr {
+    display: none;
+}
+
+/* Phòng trường hợp là border-top của container */
+.container {
+    border-top: none !important;
+}
+
